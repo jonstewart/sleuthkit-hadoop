@@ -217,7 +217,7 @@ public class ExtractMapper extends Mapper<NullWritable,FileSplit,Text,Text> {
   }
 
   protected void process_extent(FSDataInputStream file, FileSystem fs, Path outPath, Map<String,?> map, Context context) throws IOException, InterruptedException {
-    final String id = (String)map.get("id");
+    final byte[] id = (String)map.get("id");
     final long fileSize = (Long)map.get("size");
     MD5Hash.reset();
 
