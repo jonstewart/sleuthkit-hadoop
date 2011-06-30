@@ -50,8 +50,6 @@ limitations under the License.
 	var deviceName = "";
   var cTable;
   var fHead;
-  var docClusterCoords = [];
-  //docClusterCoords = docClusterChart;
   
   function positionMenus() {
     $("#printReport").position({
@@ -86,19 +84,13 @@ limitations under the License.
   }
   
   $(window).resize(function(){
-		$("#chart2").position({
+    $("#dataTableContent").width($("#content").width());
+    $("#content").height($("#dataTableContent").height());
+		$("#dataTableContent").position({
 			of: $("#content"),
 			my: "left top",
 			at: "left top",
 			offset: "0 0",
-			collision: "none none"
-		});
-		$("#dataTableContent").width($("#content").width() - $("#chart2").width());
-		$("#dataTableContent").position({
-			of: $("#chart2"),
-			my: "left top",
-			at: "right top",
-			offset: "0 1",
 			collision: "none none"
 		});
     positionMenus();
@@ -246,7 +238,6 @@ limitations under the License.
   	menuLen = Util.buildMenu(menuList, 'menuContainer');
     positionMenus();
   	fillDeviceInfo(deviceInfo);
-  	$("#chart2Title").html(Util.stringFormatComma(docClusterCounts.length));
     fillTable(docClusters, "dataTableContent", "Document Clusters");
   	$("#dTableDocuments").kiketable_colsizable({
   		dragMove: true,
@@ -291,55 +282,6 @@ limitations under the License.
 	<div class="ui-widget-menu-shadow" style="height: 10px;"></div>
 	<div id="menuContainer" style="height: 45px; "></div>
 	<div id="content">
-		<div id="chart2" class="ui-widget ui-widget-chart ui-corner-all" style="left: 525px; width: 250px; height: 250px; text-align: center;"><span id="chart2Title" class="ui-widget-chart-num">[chart2Title]</span><br>Document Clusters
-	    <script type="text/javascript+protovis">
-		  if (Modernizr.svg){
-			  var docPlot_w = 225,
-			      docPlot_h = 185,
-			      docPlot_x = pv.Scale.linear(0, 100).range(0, docPlot_w),
-			      docPlot_y = pv.Scale.linear(0, 100).range(0, docPlot_h),
-			      docPlot_c = pv.Scale.log(1, 100).range("orange", "brown");
-			
-			  var docPlot_vis = new pv.Panel()
-			      .width(docPlot_w)
-			      .height(docPlot_h)
-			      .bottom(1)
-			      .left(1)
-			      .right(1)
-			      .top(1)
-			      .def("i", -1)
-			      .event("click", function(d) ); //TODO: filter table on click
-			
-			  docPlot_vis.add(pv.Rule)
-			      .data(docPlot_y.ticks())
-			      .bottom(docPlot_y)
-			      .strokeStyle(function(d) d ? "#ddd" : "#000");
-	
-			  docPlot_vis.add(pv.Rule)
-			      .data(docPlot_x.ticks())
-			      .left(docPlot_x)
-			      .strokeStyle(function(d) d ? "#ddd" : "#000");
-	
-			  var dot = docPlot_vis.add(pv.Dot)
-			      .data(docClusterCoords)
-			      .left(function(d) docPlot_x(d.x))
-			      .bottom(function(d) docPlot_y(d.y))
-			      .strokeStyle(function(d) pv.Colors.category20().range()[Math.floor(d.z/20)])
-			      .fillStyle(function(d) docPlot_vis.i() == this.index ? "red" : this.strokeStyle().alpha(d.cf*0.01))
-			      .size(function(d) d.z*20)
-			      .title(function(d) d.name + "<br>Confidence: " + d.cf)
-			      .event("mouseover", pv.Behavior.tipsy({gravity: "s", fade: true, html: true}))
-			    .anchor("center").add(pv.Label)
-			      .text(function(d) d.z)
-			      .textStyle("black");
-			
-			  docPlot_vis.render();
-			}
-			else {
-				$('#chart2').append('<br><br>No SVG support detected');
-			}
-	    </script>
-	  </div>
 		<div id="dataTableContent" style="position:absolute;"></div>
 	</div>
 </div>
