@@ -255,11 +255,6 @@ limitations under the License.
       cloneDiv.attr('id', 'allKeyframesContainer');
       var allkeysDiv = cloneDiv.find('div.allKeyframes');
       allkeysDiv.attr('id', 'v' + video.hash);
-      allkeysDiv.click(function(){
-        $.fancybox.close();
-        $('#allKeyframesContainer').remove();
-        $('.tipsy').remove();
-      });
       //TODO: add full_path from JSON
       allkeysDiv.find('h3').html('video.full_path' + '<br>' + round(video.duration)+' s, ' + round(video.fps) + 
         ' fps<br>' + video.keyframes[0].count + ' keyframes<br>MD5: ' + video.hash);
@@ -295,6 +290,11 @@ limitations under the License.
         
     });
     keyframe_row.append('<div style="clear:both"></div>');
+    keyframe_row.click(function(){
+      $.fancybox.close();
+      $('#allKeyframesContainer').remove();
+      $('.tipsy').remove();
+    });
     keyframe_row.appendTo(targetDiv);
   }
 

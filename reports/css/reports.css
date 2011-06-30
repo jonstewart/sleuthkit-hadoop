@@ -52,6 +52,7 @@ h3 { margin: 5px 0px; }
 .singleImage { float: left; height: 100px; padding: 3px 3px; }
 .keyframe { float: left; margin: 5px; margin-bottom: 20px; color: #222222; font-size: 1.0em; font-family: Lucida Grande, Lucida Sans, Arial, sans-serif; }
 .keyframe:hover { cursor: pointer; }
+.keyframe_row:hover { cursor: pointer; }
 .keyframeImage { border: 1px solid #cccccc; width: 100px; height: 100px; }
 .keyframeName { width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dropShadow { -moz-box-shadow: 3px 3px 3px #888; -webkit-box-shadow: 3px 3px 3px #888; box-shadow: 3px 3px 3px #888; }
