@@ -524,7 +524,7 @@ public class PythonJob {
   public static void main(String[] args) throws Exception {
     Configuration conf = HBaseConfiguration.create();
     String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
-    if (otherArgs.length < 4) {
+    if (otherArgs.length < 5) {
       System.err.println("Usage: PythonJob <image_id> <friendly_name> <outpath> <python_mapper> <python_reducer> [SequenceFileOutputFormat]");
       System.exit(2);
     }
