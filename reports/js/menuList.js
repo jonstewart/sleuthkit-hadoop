@@ -19,6 +19,6 @@ var menuList = [
   {a: "Search Hits", link: "searchhits.html"},
   {a: "Document Clusters", link: "documents.html"},
   {a: "Graphics", link: "graphics.html?p=faces"},
-  {a: "Similar Devices", link: "linkanalysis.html"},
-  {a: "Job Configuration", link: "jobconfig.html"}
+  {a: "Similar Devices", link: "linkanalysis.html"}
+//  {a: "Job Configuration", link: "jobconfig.html"}
 ];
