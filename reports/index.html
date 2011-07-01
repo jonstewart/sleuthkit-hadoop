@@ -249,7 +249,7 @@ limitations under the License.
     $("#chart1").attr("link", "linkanalysis.html");
     $("#chart2").attr("link", "documents.html");
     $("#chart5").attr("link", "searchhits.html");
-    $("#chart6").attr("link", "graphics.html");
+    $("#chart6").attr("link", "graphics.html?p=faces");
     for (i = 1; i <= 6; i++) {
   	  $("#chart" + i).bind('mouseover', menuMouseOver);
   	  $("#chart" + i).bind('mouseout', menuMouseOut);
@@ -311,7 +311,8 @@ limitations under the License.
 			</div>
 		</div>
 		<div id="chartContainer" style="height: 275px; width: 100%;">
-			<div id="chart5" class="ui-widget ui-widget-chart ui-corner-all" style="left: 525px; width: 250px; height: 250px; text-align: center;"><span id="chart5Title" class="ui-widget-chart-num">[chart5Title]</span><br>Keyword Search Hits
+			<div id="chart5" class="ui-widget ui-widget-chart ui-corner-all" style="left: 525px; width: 250px; height: 250px; text-align: center;">
+        <span id="chart5Title" class="ui-widget-chart-num">[chart5Title]</span><br>Keyword Search Hits
 		  	<script type="text/javascript+protovis">
 			  if (Modernizr.svg){
 	
@@ -347,7 +348,8 @@ limitations under the License.
 				}
 			  </script>
 			</div>
-			<div id="chart2" class="ui-widget ui-widget-chart ui-corner-all" style="left: 525px; width: 250px; height: 250px; text-align: center;"><span id="chart2Title" class="ui-widget-chart-num">[chart2Title]</span><br>Document Clusters
+			<div id="chart2" class="ui-widget ui-widget-chart ui-corner-all" style="left: 525px; width: 250px; height: 250px; text-align: center;">
+        <span id="chart2Title" class="ui-widget-chart-num">[chart2Title]</span><br>Document Clusters
 		  	<script type="text/javascript+protovis">
 			  if (Modernizr.svg){
 	
@@ -380,7 +382,8 @@ limitations under the License.
 				}
 			  </script>
 		  </div>
-			<div id="chart6" class="ui-widget ui-widget-chart ui-corner-all" style="left: 850px; width: 250px; height: 250px; text-align: center;"><span id="chart6Title" class="ui-widget-chart-num">[chart6Title]</span><br>Image Clusters
+			<div id="chart6" class="ui-widget ui-widget-chart ui-corner-all" style="left: 850px; width: 250px; height: 250px; text-align: center;">
+        <span id="chart6Title" class="ui-widget-chart-num">[chart6Title]</span><br>Graphics Clusters
 		    <script type="text/javascript+protovis">
 			  if (Modernizr.svg){
 					var graphicCounts_w = 225,
@@ -428,7 +431,8 @@ limitations under the License.
 				}
 		    </script>
 			</div>
-			<div id="chart1" class="ui-widget ui-widget-chart ui-corner-all" style="left: 200px; width: 250px; height: 250px; text-align: center;"><span id="chart1Title" class="ui-widget-chart-num">[chart1Title]</span><br>Similar Devices Identified
+			<div id="chart1" class="ui-widget ui-widget-chart ui-corner-all" style="left: 200px; width: 250px; height: 250px; text-align: center;">
+        <span id="chart1Title" class="ui-widget-chart-num">[chart1Title]</span><br>Similar Devices Identified
 				<script type="text/javascript+protovis">
 				if (Modernizr.svg){
 					var forceLayout_w = 225,
