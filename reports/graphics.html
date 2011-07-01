@@ -237,15 +237,13 @@ limitations under the License.
         });
         keyframeDiv.appendTo('div#clustersContainer');
     });
-    $(function(){
-      var colWidth = Math.floor($('#content').width() / 8);
-      $('#clustersContainer').isotope({
-        itemSelector: '.keyframe',
-        layoutMode : 'cellsByRow',
-        cellsByRow : {
-          columnWidth : colWidth
-        }
-      });
+    var colWidth = $('#content').width() / Math.floor($('#content').width() / ($('.keyframe').outerWidth(true)));
+    $('#clustersContainer').isotope({
+      itemSelector: '.keyframe',
+      layoutMode : 'cellsByRow',
+      cellsByRow : {
+        columnWidth : colWidth
+      }
     });
   }
 
