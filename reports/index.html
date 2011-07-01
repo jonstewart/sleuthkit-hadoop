@@ -104,52 +104,6 @@ limitations under the License.
 			}
       ++i;
     }
-		//top chart row
-    /*
-		$("#chart2").position({
-			of: $("#topChartRow"),
-			my: "middle top",
-			at: "middle top",
-			offset: "0 0",
-			collision: "none none"
-		});
-		$("#chart1").position({
-			of: $("#chart2"),
-			my: "right top",
-			at: "left top",
-			offset: "-50 0",
-			collision: "none none"
-		});
-		$("#chart3").position({
-			of: $("#chart2"),
-			my: "left top",
-			at: "right top",
-			offset: "50 0",
-			collision: "none none"
-		});
-		//bottom chart row
-		$("#chart5").position({
-			of: $("#bottomChartRow"),
-			my: "middle top",
-			at: "middle top",
-			offset: "0 0",
-			collision: "none none"
-		});
-		$("#chart4").position({
-			of: $("#chart5"),
-			my: "right top",
-			at: "left top",
-			offset: "-50 0",
-			collision: "none none"
-		});
-		$("#chart6").position({
-			of: $("#chart5"),
-			my: "left top",
-			at: "right top",
-			offset: "50 0",
-			collision: "none none"
-		});
-    */
   });
 
 	function menuClick(e)
@@ -180,13 +134,9 @@ limitations under the License.
 
 	function fillDeviceInfo(devInfo) {
 		$("#deviceName").html(Util.findObjectByName(devInfo, "deviceName").n);
-		$("#loadedBy").html(Util.findObjectByName(devInfo, "loadedBy").n);
 		$("#loadedOn").html(Util.findObjectByName(devInfo, "loadedOn").n);
 		$("#md5").html(Util.findObjectByName(devInfo, "md5").n);
-		$("#sha1").html(Util.findObjectByName(devInfo, "sha1").n);
 		$("#totalFiles").html(Util.stringFormatComma(Util.findObjectByName(devInfo, "totalFiles").n));
-		$("#knownFiles").html(Util.stringFormatComma(Util.findObjectByName(devInfo, "knownFiles").n));
-		$("#extractedFiles").html(Util.stringFormatComma(Util.findObjectByName(devInfo, "extractedFiles").n));
 		var volList = Util.findObjectByName(devInfo, "volumeList");
 		hddLen = volList.n.length;
 		var hddWidth = $("#hddContainer").width();
@@ -238,7 +188,7 @@ limitations under the License.
     menuLen = Util.buildMenu(menuList, 'menuContainer');
   	fillDeviceInfo(deviceInfo);
 	  $(".ui-widget-hdd-unused").tipsy({
-			gravity: "ne", 
+			gravity: 'ne', 
 			fade: true,
 			html: true
 		});
@@ -296,18 +246,19 @@ limitations under the License.
 	<div id="content">
 		<div id="topContainer" style="margin: 0px auto; width: 100%;">
 			<div id="overviewContainer" style="margin: 0px auto;">
-				<table class="ui-widget" style="padding: 3px; width: 100%;">
-					<tr><td class="ui-col-label">Loaded By:</td><td class="ui-col-value" id="loadedBy">[loadedBy]</td><td id="padCol" style="width: 30px;"/><td class="ui-col-label">Device Hash (MD5):</td><td class="ui-col-value" id="md5"></td></tr>
-					<tr><td class="ui-col-label">Loaded On:</td><td class="ui-col-value" id="loadedOn">[loadedOn]</td><td id="padCol" style="width: 30px;"/><td class="ui-col-label">Device Hash (SHA1):</td><td class="ui-col-value" id="sha1"></td></tr>
+				<table class="ui-widget" style="padding: 8px; width: 100%;">
+					<tr>
+            <td class="ui-col-label">Loaded On:</td><td class="ui-col-value" id="loadedOn">[loadedOn]</td>
+            <td id="padCol" style="width: 30px;"/>
+            <td class="ui-col-label">Device Hash (MD5):</td><td class="ui-col-value" id="md5"></td></tr>
+					<tr>
+            <td class="ui-col-label">Total Files:</td><td class="ui-col-value" id="totalFiles">[totalFiles]</td>
+            <td id="padCol" style="width: 75px;"/>
+            <td></td><td>Partitions fill <span id="spaceFilled">[spaceFilled]</span>% of usable space</td></tr>
 				</table>
 			</div>
 			<div id="hddContainer" style="height: 80px; width: 95%;"></div>
-			<div id="detailContainer" style="margin: 0px auto; width: 100%;">
-				<table class="ui-widget"  style="padding: 3px; width: 100%;">
-					<tr><td class="ui-col-label">Total Files:</td><td class="ui-col-value" id="totalFiles">[totalFiles]</td><td id="padCol" style="width: 75px;"/><td>Partitions fill <span id="spaceFilled">[spaceFilled]</span>% of usable space</td></tr>
-					<tr><td class="ui-col-label">Known Files:</td><td class="ui-col-value" id="knownFiles">[knownFiles]</td><td id="padCol" style="width: 75px;"/><td></td></tr>
-					<tr><td class="ui-col-label">Files Extracted<br>From Containers:</td><td class="ui-col-value" id="extractedFiles">[extractedFiles]</td><td id="padCol" style="width: 75px;"/><td></td></tr>
-				</table>
+			<div id="detailContainer" style="margin: 20px auto; width: 100%;">
 			</div>
 		</div>
 		<div id="chartContainer" style="height: 275px; width: 100%;">
