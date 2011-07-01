@@ -19,8 +19,8 @@ limitations under the License.
 var menuList = [
   {a: "Overview", link: "index.html"},
   {a: "Search Hits", link: "searchhits.html"},
-  {a: "Entities", link: "entities.html"},
-  {a: "Known Bad", link: "knownbad.html"},
+//  {a: "Entities", link: "entities.html"},
+//  {a: "Known Bad", link: "knownbad.html"},
   {a: "Document Clusters", link: "documents.html"},
   {a: "Graphics", link: "graphics.html?p=faces"},
   {a: "Similar Devices", link: "linkanalysis.html"},
