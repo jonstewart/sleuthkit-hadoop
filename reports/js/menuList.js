@@ -1,6 +1,4 @@
 /*
-reports/data/index.html
-
 Copyright 2011, Lightbox Technologies, Inc
 
 Licensed under the Apache License, Version 2.0 (the "License");

@@ -129,7 +129,7 @@ limitations under the License.
       });
       clusterDiv.fancybox({
         'onClosed': function() { 
-          //this prevents caching elements in the DOM - may change this
+          //TODO: this prevents caching elements in the DOM - test mem usage
           $("#allImagesContainer").remove();
           $(".tipsy").remove();
         } 
@@ -228,9 +228,10 @@ limitations under the License.
           showAllKeyframes(video);
           $('.tipsy').remove();
         });
+        //TODO: regular light box will not scale for large videos
         keyframeDiv.fancybox({
           'onClosed': function() { 
-            //this prevents caching elements in the DOM - may change this
+            //TODO: this prevents caching elements in the DOM - test mem usage
             $('#allKeyframesContainer').remove();
             $('.tipsy').remove();
           } 

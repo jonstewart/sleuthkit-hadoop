@@ -1,6 +1,4 @@
 /*
-reports/js/util.js
-
 Copyright 2011, Lightbox Technologies, Inc
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -165,6 +163,7 @@ Utility.prototype.DownloadJSON2CSV = function(objArray, selArray)
 {
 	//this.deserialize(queryString, 1);
 	//TODO: use selArray to only output selected items
+  //TODO: this should probably build an array, then join, for better performance
   var array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
   var str = '';
   arrLen = array.length;
