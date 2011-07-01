@@ -19,13 +19,13 @@ limitations under the License.
 function Utility () {}
 
 Utility.prototype.getDataValueArray = function(data) {
-		var arr = [];
-	  var len = data.length;
-	  var i = -1;
-	  while(++i < len) {
-	    arr.push(data[i].n);
-	  }
-	  return arr;
+  var arr = [];
+  var len = data.length;
+  var i = -1;
+  while(++i < len) {
+    arr.push(data[i].n);
+  }
+  return arr;
 };
 
  Utility.prototype.stringFormatComma = function(number) {
@@ -67,14 +67,42 @@ Utility.prototype.getSum = function(data) {
   return m;
 }
 
-Utility.prototype.getMax = function(data) {
+Utility.prototype.getMax = function(data, roundTo) {
+  if (roundTo == null || roundTo == 0 || roundTo == "") {
+    roundTo = 100;
+  }
   var m = 0;
   var i = data.length;
   while(i--) {
     m = Math.max(m, data[i].n);
   }
-  m = Math.round((m+50)/100)*100;
+  if (m > roundTo)
+    roundTo = m;
+//m = Math.round((m+50)/100)*100; //round to 100
+  m = Math.round((m+(roundTo/2))/roundTo)*roundTo;
   return m;
+}
+
+Utility.prototype.countObjects = function(obj) {
+  var count = 0;
+  for (var prop in obj) {
+    ++count;
+  }
+  return count;
+}
+
+Utility.prototype.getGraphicsObjArray = function(obj) {
+  var arr = [];
+  for (var prop in obj) {
+    var ct = obj[prop].length;
+    if (ct == null || ct == "") {
+      //arr.push({"a":prop,"n":this.countObjects(obj[prop])}); //uncomment to include video count
+    }
+    else {
+      arr.push({"a":prop,"n":ct});
+    }
+  }
+  return arr;
 }
 
 Utility.prototype.serializeObject = function(obj) {
@@ -101,20 +129,20 @@ Utility.prototype.deserialize = function(queryString, start) {
 }
 
 Utility.prototype.getUrlParams = function() {
-    var urlParams = {};
-    var e,
-        a = /\+/g,
-        r = /([^&=]+)=?([^&]*)/g,
-        d = function (s) { return decodeURIComponent(s.replace(a, " ")); },
-        q = window.location.search.substring(1);
-    while (e = r.exec(q))
-       urlParams[d(e[1])] = d(e[2]);
-    return urlParams;
+  var urlParams = {};
+  var e,
+      a = /\+/g,
+      r = /([^&=]+)=?([^&]*)/g,
+      d = function (s) { return decodeURIComponent(s.replace(a, " ")); },
+      q = window.location.search.substring(1);
+  while (e = r.exec(q))
+     urlParams[d(e[1])] = d(e[2]);
+  return urlParams;
 }
 
 Utility.prototype.getLinksFromScores = function(scoresArr, devName) {
   var obj = {nodes:[],links:[]};
-  obj.nodes.push({nodeName:devName, group:1});
+  obj.nodes.push({nodeName:devName, group:0});
   var sLen = scoresArr.length;
   var mult = 1;
   if (sLen < 5) mult = 4; //increase weight for small number of nodes
@@ -157,31 +185,31 @@ Utility.prototype.htmlSafeString = function(s)
 }
 
 Utility.prototype.findObjectByName = function(data, str) {
-		if (data) {
-			var arr = [];
-		  var len = data.length;
-		  var i = -1;
-		  while(++i < len) {
-		    if (data[i].a == str) {
-		    	return data[i];
-		    }
-		  }
-		}
-	  return [];
+  if (data) {
+    var arr = [];
+    var len = data.length;
+    var i = -1;
+    while(++i < len) {
+      if (data[i].a == str) {
+        return data[i];
+      }
+    }
+  }
+  return [];
 };
 
 Utility.prototype.findObjectByIndex = function(data, index) {
-		if (data) {
-			var arr = [];
-		  var len = data.length;
-		  var i = -1;
-		  while(++i < len) {
-		    if (data[i].a == index) {
-		    	return data[i];
-		    }
-		  }
-		}
-	  return [];
+  if (data) {
+    var arr = [];
+    var len = data.length;
+    var i = -1;
+    while(++i < len) {
+      if (data[i].a == index) {
+        return data[i];
+      }
+    }
+  }
+  return [];
 };
 
 Utility.prototype.getFileNameFromPath = function(str, delim) {

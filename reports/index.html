@@ -38,13 +38,19 @@ limitations under the License.
   <script src="js/menuList.js" type="text/javascript"></script>
   <script src="data/documents.js" type="text/javascript"></script>
   <script src="data/entities.js" type="text/javascript"></script>
-  <script src="data/graphicsclusters.js" type="text/javascript"></script>
+  <script src="data/graphics.js" type="text/javascript"></script>
   <script src="data/index.js" type="text/javascript"></script>
   <script src="data/knownbad.js" type="text/javascript"></script>
   <script src="data/linkanalysis.js" type="text/javascript"></script>
   <script src="data/searchhits.js" type="text/javascript"></script>
   <script>
+  //init
+	var Util = new Utility();
+	var menuLen = 0;
+	var hddLen = 0;
   var deviceLinks;
+  var graphicData;
+  graphicData = Util.getGraphicsObjArray(report); 
   	
   $(window).resize(function(){
     var elem = $(this);
@@ -161,11 +167,6 @@ limitations under the License.
 	  $(this)
 	  .css({ background: '' });
 	}
-	
-	var Util = new Utility();
-	
-	var menuLen = 0;
-	var hddLen = 0;
 
 	function getVolWidth(divWidth, hddSize, volSize) {
 		var w = (volSize*divWidth)/hddSize;
@@ -245,7 +246,7 @@ limitations under the License.
   	$("#chart3Title").html(Util.stringFormatComma(Util.getSum(entityCounts)));
   	$("#chart4Title").html(Util.stringFormatComma(Util.getSum(knownBadCounts)));
   	$("#chart5Title").html(Util.stringFormatComma(Util.getSum(keywordCounts)));
-  	$("#chart6Title").html(Util.stringFormatComma(imgClusterData.length));
+  	$("#chart6Title").html(Util.stringFormatComma(Util.getSum(graphicData)));
     $("#chart1").attr("link", "linkanalysis.html");
     $("#chart2").attr("link", "documents.html");
     $("#chart3").attr("link", "entities.html");
@@ -358,7 +359,6 @@ limitations under the License.
 					    .right(3)
 					    .top(3);
 					
-					/* The area. */
 					docClusters_vis.add(pv.Area)
 					    .data(docClusters_dataArray)
 					    .fillStyle("#bf1717")
@@ -484,13 +484,15 @@ limitations under the License.
 					    .right(3)
 					    .top(3);
 					
-					/* The area. */
 					searchHits_vis.add(pv.Area)
 					    .data(searchHits_dataArray)
 					    .fillStyle("#2ca02c")
 					    .left(function() searchHits_x()(this.index))
 					    .height(function(d) searchHits_y()(d))
-					    .bottom(0);
+					    .bottom(0)
+            .anchor("top").add(pv.Line)
+              .lineWidth(3)
+              .strokeStyle("#276127");
 	
 					searchHits_vis.render();
 				}
@@ -502,45 +504,45 @@ limitations under the License.
 			<div id="chart6" class="ui-widget ui-widget-chart ui-corner-all" style="left: 850px; width: 250px; height: 250px; text-align: center;"><span id="chart6Title" class="ui-widget-chart-num">[chart6Title]</span><br>Image Clusters
 		    <script type="text/javascript+protovis">
 			  if (Modernizr.svg){
-				  var imgPlot_w = 225,
-				      imgPlot_h = 185,
-				      imgPlot_x = pv.Scale.linear(0, 100).range(0, imgPlot_w),
-				      imgPlot_y = pv.Scale.linear(0, 100).range(0, imgPlot_h),
-				      imgPlot_c = pv.Scale.log(1, 100).range("orange", "brown");
-				
-				  var imgPlot_vis = new pv.Panel()
-				      .width(imgPlot_w)
-				      .height(imgPlot_h)
-				      .bottom(1)
-				      .left(1)
-				      .right(1)
-				      .top(1)
-				      .def("i", -1)
-				      .event("click", function(d) self.location = "clusters.html");
-				
-				  imgPlot_vis.add(pv.Rule)
-				      .data(imgPlot_y.ticks())
-				      .bottom(imgPlot_y)
-				      .strokeStyle(function(d) d ? "#ddd" : "#000");
-		
-				  imgPlot_vis.add(pv.Rule)
-				      .data(imgPlot_x.ticks())
-				      .left(imgPlot_x)
-				      .strokeStyle(function(d) d ? "#ddd" : "#000");
-		
-				  var dot = imgPlot_vis.add(pv.Dot)
-				      .data(imgClusterData)
-				      .left(function(d) imgPlot_x(d.x))
-				      .bottom(function(d) imgPlot_y(d.y))
-				      .strokeStyle(function(d) pv.Colors.category20().range()[Math.floor(d.z/20)])
-				      .fillStyle(function(d) imgPlot_vis.i() == this.index ? "red" : this.strokeStyle().alpha(d.cf*0.01))
-				      .size(function(d) d.z*20)
-				      .title(function(d) d.name + "<br>Confidence: " + d.cf)
-				      .event("mouseover", pv.Behavior.tipsy({gravity: "s", fade: true, html: true}))
-				    .anchor("center").add(pv.Label)
-				      .text(function(d) d.z)
-				      .textStyle("black");
-				  imgPlot_vis.render();
+					var graphicCounts_w = 225,
+					    graphicCounts_h = 185,
+						  graphicCounts_y = pv.Scale.ordinal(pv.range(graphicData.length)).splitBanded(0, graphicCounts_h, 4/5),
+					  	graphicCounts_x = pv.Scale.linear(0, Util.getMax(graphicData, 50)).range(0, graphicCounts_w);
+					var graphicCounts_vis = new pv.Panel()
+					    .width(graphicCounts_w)
+					    .height(graphicCounts_h)
+					    .bottom(20)
+					    .left(3)
+					    .right(15)
+					    .top(3);
+					
+					var graphicCounts_bar = graphicCounts_vis.add(pv.Bar)
+              .data(graphicData)
+					    .top(function() graphicCounts_y(this.index))
+					    .height(graphicCounts_y.range().band)
+					    .left(0)
+					    .width(function(d) d.n/(Util.getMax(graphicData, 50)/graphicCounts_w))
+					    .text(function(d) d.n)
+					    .event("mouseover", pv.Behavior.tipsy({gravity: "w", fade: true}));
+					
+					graphicCounts_bar.anchor("left").add(pv.Label)
+					    .font("bold 14px sans-serif")
+					    .textStyle("#333333")
+					    .textAlign("left")
+					    .text(function(d) d.a);
+					
+					graphicCounts_vis.add(pv.Rule)
+					    .data(graphicCounts_x.ticks(5))
+					    .left(graphicCounts_x)
+					    .strokeStyle(function(d) d ? "rgba(255,255,255,.3)" : "#000")
+					  .add(pv.Rule)
+					    .bottom(0)
+					    .height(5)
+					    .strokeStyle("#000")
+					  .anchor("bottom").add(pv.Label)
+					    .text(graphicCounts_x.tickFormat);
+					
+					graphicCounts_vis.render();
 				}
 				else {
 					$('#chart6').append('<br><br>No SVG support detected');
