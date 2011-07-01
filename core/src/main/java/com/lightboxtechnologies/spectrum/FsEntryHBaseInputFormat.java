@@ -33,8 +33,8 @@ import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.fs.FileSystem;
 
-import org.apache.hadoop.hbase.mapreduce.TableInputFormatBase;
 import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
+import org.apache.hadoop.hbase.mapreduce.TableRecordReader;
 
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.io.*;
@@ -42,6 +42,8 @@ import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.*;
 import org.apache.hadoop.hbase.filter.RowFilter;
 import org.apache.hadoop.hbase.filter.CompareFilter;
+
+import org.apache.commons.codec.binary.Hex;
 
 import java.util.Date;
 import java.util.Map;
@@ -68,12 +70,14 @@ public class FsEntryHBaseInputFormat extends InputFormat implements Configurable
   static public void setupJob(Job job, String deviceID) throws IOException, DecoderException {
     Scan scan = new Scan();
     scan.addFamily(HBaseTables.ENTRIES_COLFAM_B);
-/*    if (deviceID != null && deviceID.length() > 0) {
+/*
+    if (deviceID != null && deviceID.length() > 0) {
       byte[] imgID = Hex.decodeHex(deviceID.toCharArray());
       FsEntryRowFilter keyFilt = new FsEntryRowFilter(imgID);
       RowFilter filt = new RowFilter(CompareFilter.CompareOp.EQUAL, keyFilt);
       scan.setFilter(filt);
-    }*/
+    }
+*/
     HBaseConfiguration.addHbaseResources(job.getConfiguration());
     job.getConfiguration().set(TableInputFormat.INPUT_TABLE, HBaseTables.ENTRIES_TBL);
     job.getConfiguration().set(TableInputFormat.SCAN, convertScanToString(scan));
@@ -131,7 +135,12 @@ public class FsEntryHBaseInputFormat extends InputFormat implements Configurable
     RecordReader<ImmutableBytesWritable,Result> inner = null;
     try {
       inner = TblInput.createRecordReader(split, ctx);
-      outer = new FsEntryRecordReader(inner, ImageID);
+      
+      final Scan scan = TblInput.getScan();
+      final byte[] first = scan.getStartRow();
+      final byte[] last = scan.getStopRow();     
+
+      outer = new FsEntryRecordReader(inner, first, last, ImageID);
       return outer;
     }
     finally {
@@ -149,13 +158,19 @@ public class FsEntryHBaseInputFormat extends InputFormat implements Configurable
     private final FsEntry Value;
     private FsEntryRowFilter Filter;
 
-    public FsEntryRecordReader(RecordReader<ImmutableBytesWritable, Result> rr, byte[] imgID) {
+    private final byte[] First;
+    private final byte[] Last;
+
+    public FsEntryRecordReader(RecordReader<ImmutableBytesWritable, Result> rr, byte[] first, byte[] last, byte[] imgID) {
       TblReader = rr;
       Key = new ImmutableHexWritable();
       Value = new FsEntry();
       if (imgID != null && imgID.length > 0) {
         Filter = new FsEntryRowFilter(imgID);
       }
+
+      First = first;
+      Last = last;
     }
 
     public void close() throws IOException {
@@ -186,11 +201,27 @@ public class FsEntryHBaseInputFormat extends InputFormat implements Configurable
     public boolean nextKeyValue() throws IOException, InterruptedException {
       while (TblReader.nextKeyValue()) {
         Cur = TblReader.getCurrentValue();
-        if (Filter != null && Filter.compareTo(Cur.getRow()) != 0) {
-          continue;
+
+        if (Filter == null || Filter.compareTo(Cur.getRow()) == 0) {
+          return true;
         }
-        return true;
+
+        if (TblReader instanceof TableRecordReader) {
+//          throw new RuntimeException("WFT!");
+
+          final byte[] jumpkey =
+            FsEntryUtils.nextFsEntryKey(getCurrentKey().get());
+
+          if (Bytes.compareTo(jumpkey, Last) < 0) {
+            ((TableRecordReader) TblReader).restart(jumpkey);
+            LOG.info("jumping to " + Hex.encodeHexString(jumpkey));
+          }
+          else {
+            return false;
+          }
+        }
       }
+
       return false;
     }
   }
