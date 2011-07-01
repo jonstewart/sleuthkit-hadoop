@@ -34,13 +34,12 @@ limitations under the License.
   <link href="css/tipsy.css" type="text/css" rel="stylesheet"/>
   <script src="js/jquery.jgrowl.min.js" type="text/javascript"></script>
   <link href="css/jquery.jgrowl.css" type="text/css" rel="stylesheet"/>
+  <script src="js/jquery.isotope.min.js" type="text/javascript"></script>
   <script src="js/util.js" type="text/javascript"></script>
   <script src="js/menuList.js" type="text/javascript"></script>
   <script src="data/documents.js" type="text/javascript"></script>
-  <script src="data/entities.js" type="text/javascript"></script>
   <script src="data/graphics.js" type="text/javascript"></script>
   <script src="data/index.js" type="text/javascript"></script>
-  <script src="data/knownbad.js" type="text/javascript"></script>
   <script src="data/linkanalysis.js" type="text/javascript"></script>
   <script src="data/searchhits.js" type="text/javascript"></script>
   <script>
@@ -106,6 +105,7 @@ limitations under the License.
       ++i;
     }
 		//top chart row
+    /*
 		$("#chart2").position({
 			of: $("#topChartRow"),
 			my: "middle top",
@@ -149,6 +149,7 @@ limitations under the License.
 			offset: "50 0",
 			collision: "none none"
 		});
+    */
   });
 
 	function menuClick(e)
@@ -243,14 +244,10 @@ limitations under the License.
 		});
   	$("#chart1Title").html(Util.stringFormatComma(deviceLinks.links.length));
   	$("#chart2Title").html(Util.stringFormatComma(docClusterCounts.length));
-  	$("#chart3Title").html(Util.stringFormatComma(Util.getSum(entityCounts)));
-  	$("#chart4Title").html(Util.stringFormatComma(Util.getSum(knownBadCounts)));
   	$("#chart5Title").html(Util.stringFormatComma(Util.getSum(keywordCounts)));
   	$("#chart6Title").html(Util.stringFormatComma(Util.getSum(graphicData)));
     $("#chart1").attr("link", "linkanalysis.html");
     $("#chart2").attr("link", "documents.html");
-    $("#chart3").attr("link", "entities.html");
-    $("#chart4").attr("link", "knownbad.html");
     $("#chart5").attr("link", "searchhits.html");
     $("#chart6").attr("link", "graphics.html");
     for (i = 1; i <= 6; i++) {
@@ -264,6 +261,20 @@ limitations under the License.
 			html: true
 		});
     $(window).resize();
+    if (!Modernizr.svg){
+      $.jGrowl("Your browser does not support SVG.<br>You will not see chart content.", { 
+        life: 5000,
+        position: 'top-left' 
+      });
+    }
+    var colWidth = Math.floor($("#chartContainer").width() / 4);
+    $('#chartContainer').isotope({
+      itemSelector: '.ui-widget-chart',
+      layoutMode : 'cellsByRow',
+      cellsByRow : {
+        columnWidth : colWidth
+      }
+    });
   });
 	</script>
 </head>
@@ -299,172 +310,7 @@ limitations under the License.
 				</table>
 			</div>
 		</div>
-		<div id="topChartRow" style="height: 275px; width: 100%;">
-			<div id="chart1" class="ui-widget ui-widget-chart ui-corner-all" style="left: 200px; width: 250px; height: 250px; text-align: center;"><span id="chart1Title" class="ui-widget-chart-num">[chart1Title]</span><br>Similar Devices Identified
-				<script type="text/javascript+protovis">
-				if (Modernizr.svg){
-					var forceLayout_w = 225,
-					    forceLayout_h = 185,
-					    forceLayout_colors = pv.Colors.category10();
-					
-					var forceLayout_vis = new pv.Panel()
-					    .width(forceLayout_w)
-					    .height(forceLayout_h)
-					    .event("mousedown", pv.Behavior.pan())
-					    .event("mousewheel", pv.Behavior.zoom());
-					
-					var forceLayout_force = forceLayout_vis.add(pv.Layout.Force)
-					    .nodes(deviceLinks.nodes)
-					    .links(deviceLinks.links)
-					    //.springLength(10)
-		    			.chargeConstant(-1000)
-					    .bound(true);
-					
-					forceLayout_force.link.add(pv.Line);
-					
-					forceLayout_force.node.add(pv.Dot)
-					    .size(function(d) (d.linkDegree + 4) * Math.pow(this.scale, -1.5))
-					    .fillStyle(function(d) d.fix ? "brown" : forceLayout_colors(d.group))
-					    .strokeStyle(function() this.fillStyle().darker())
-					    .lineWidth(1)
-					    .title(function(d) d.nodeName)
-					    .event("mouseover", pv.Behavior.tipsy({gravity: "s", fade: true}))
-					    .event("mouseout", pv.Behavior.tipsy.trigger)
-					    .event("mousedown", pv.Behavior.drag())
-					    .event("drag", forceLayout_force);
-					
-					forceLayout_vis.render();
-				}
-				else {
-					$('#chart1').append('<br><br>No SVG support detected');
-				}
-				</script>
-			</div>
-			<div id="chart2" class="ui-widget ui-widget-chart ui-corner-all" style="left: 525px; width: 250px; height: 250px; text-align: center;"><span id="chart2Title" class="ui-widget-chart-num">[chart2Title]</span><br>Document Clusters
-		  	<script type="text/javascript+protovis">
-			  if (Modernizr.svg){
-	
-					var docClusters_dataArray = Util.getDataValueArray(docClusterCounts);
-	
-					var docClusters_w = 225,
-					    docClusters_h = 185,
-					    docClusters_x = function(d) pv.Scale.linear(docClusters_dataArray, pv.index).range(0, docClusters_w),
-					    docClusters_y = function(d) pv.Scale.linear(0, pv.max(docClusters_dataArray)).range(0, docClusters_h);
-					
-					var docClusters_vis = new pv.Panel()
-					    .width(docClusters_w)
-					    .height(docClusters_h)
-					    .bottom(0)
-					    .left(3)
-					    .right(3)
-					    .top(3);
-					
-					docClusters_vis.add(pv.Area)
-					    .data(docClusters_dataArray)
-					    .fillStyle("#bf1717")
-					    .left(function() docClusters_x()(this.index))
-					    .height(function(d) docClusters_y()(d))
-					    .bottom(0);
-	
-					docClusters_vis.render();
-				}
-				else {
-					$('#chart2').append('<br><br>No SVG support detected');
-				}
-			  </script>
-		  </div>
-			<div id="chart3" class="ui-widget ui-widget-chart ui-corner-all" style="left: 850px; width: 250px; height: 250px; text-align: center;"><span id="chart3Title" class="ui-widget-chart-num">[chart3Title]</span><br>Entities Extracted
-		  	<script type="text/javascript+protovis">
-			  if (Modernizr.svg){
-					var entityCounts_w = 225,
-					    entityCounts_h = 185,
-						  entityCounts_y = pv.Scale.ordinal(pv.range(entityCounts.length)).splitBanded(0, entityCounts_h, 4/5),
-					  	entityCounts_x = pv.Scale.linear(0, Util.getMax(entityCounts)).range(0, entityCounts_w);
-					
-					var entityCounts_vis = new pv.Panel()
-					    .width(entityCounts_w)
-					    .height(entityCounts_h)
-					    .bottom(20)
-					    .left(3)
-					    .right(15)
-					    .top(3);
-					
-					var entityCounts_bar = entityCounts_vis.add(pv.Bar)
-					    .data(entityCounts)
-					    .top(function() entityCounts_y(this.index))
-					    .height(entityCounts_y.range().band)
-					    .left(0)
-					    .width(function(d) d.n/(Util.getMax(entityCounts)/entityCounts_w))
-					    .text(function(d) d.n)
-					    .event("mouseover", pv.Behavior.tipsy({gravity: "w", fade: true}));
-					
-					entityCounts_bar.anchor("left").add(pv.Label)
-					    .font("bold 14px sans-serif")
-					    .textStyle("#333333")
-					    .textAlign("left")
-					    .text(function(d) d.a);
-					
-					entityCounts_vis.add(pv.Rule)
-					    .data(entityCounts_x.ticks(5))
-					    .left(entityCounts_x)
-					    .strokeStyle(function(d) d ? "rgba(255,255,255,.3)" : "#000")
-					  .add(pv.Rule)
-					    .bottom(0)
-					    .height(5)
-					    .strokeStyle("#000")
-					  .anchor("bottom").add(pv.Label)
-					    .text(entityCounts_x.tickFormat);
-					
-					entityCounts_vis.render();
-				}
-				else {
-					$('#chart3').append('<br><br>No SVG support detected');
-				}
-			  </script>
-			</div>
-		</div>
-		<div id="bottomChartRow" style="height: 275px; width: 100%;">
-			<div id="chart4" class="ui-widget ui-widget-chart ui-corner-all" style="left: 200px; width: 250px; height: 250px; text-align: center;"><span id="chart4Title" class="ui-widget-chart-num">[chart4Title]</span><br>Known Bad Files
-		  	<script type="text/javascript+protovis">
-			  if (Modernizr.svg){
-				  var pieChart_w = 225,
-				      pieChart_h = 200,
-				      pieChart_r = 0.4375 * pieChart_w,
-				      pieChart_sum = Util.getSum(knownBadCounts);
-				
-				  var pieChart_vis = new pv.Panel()
-				      .width(pieChart_w)
-				      .height(pieChart_h);
-				
-				  pieChart_vis.add(pv.Wedge)
-				      .def("o", -1)
-				      .data(knownBadCounts)
-				      .innerRadius(0)
-				      .outerRadius(pieChart_r)
-				      .angle(function(d) (d.n/pieChart_sum) * 2 * Math.PI)
-				      .left(function() (pieChart_w/2)
-				          + Math.cos(this.startAngle() + this.angle() / 2)
-				          * ((this.o() == this.index) ? 10 : 0))
-				      .bottom(function() (pieChart_h/2)
-				          - Math.sin(this.startAngle() + this.angle() / 2)
-				          * ((this.o() == this.index) ? 10 : 0))
-				      .text(function(d) d.a + " : " + d.n + " files")
-				      .event("mouseover", pv.Behavior.tipsy({gravity: "s", fade: true}))//this.o(this.index))
-				      .event("mouseout", function() this.o(-1))
-				    .anchor("center").add(pv.Label)
-				      .visible(function(d) (d.n/pieChart_sum) > .05)
-				      .font("bold 12px sans-serif")
-				      .textStyle("black")
-				      .textAngle(0)
-				      .text(function(d) d.a);
-				
-				  pieChart_vis.render();
-				}
-				else {
-					$('#chart4').append('<br><br>No SVG support detected');
-				}
-			  </script>
-		  </div>
+		<div id="chartContainer" style="height: 275px; width: 100%;">
 			<div id="chart5" class="ui-widget ui-widget-chart ui-corner-all" style="left: 525px; width: 250px; height: 250px; text-align: center;"><span id="chart5Title" class="ui-widget-chart-num">[chart5Title]</span><br>Keyword Search Hits
 		  	<script type="text/javascript+protovis">
 			  if (Modernizr.svg){
@@ -501,6 +347,39 @@ limitations under the License.
 				}
 			  </script>
 			</div>
+			<div id="chart2" class="ui-widget ui-widget-chart ui-corner-all" style="left: 525px; width: 250px; height: 250px; text-align: center;"><span id="chart2Title" class="ui-widget-chart-num">[chart2Title]</span><br>Document Clusters
+		  	<script type="text/javascript+protovis">
+			  if (Modernizr.svg){
+	
+					var docClusters_dataArray = Util.getDataValueArray(docClusterCounts);
+	
+					var docClusters_w = 225,
+					    docClusters_h = 185,
+					    docClusters_x = function(d) pv.Scale.linear(docClusters_dataArray, pv.index).range(0, docClusters_w),
+					    docClusters_y = function(d) pv.Scale.linear(0, pv.max(docClusters_dataArray)).range(0, docClusters_h);
+					
+					var docClusters_vis = new pv.Panel()
+					    .width(docClusters_w)
+					    .height(docClusters_h)
+					    .bottom(0)
+					    .left(3)
+					    .right(3)
+					    .top(3);
+					
+					docClusters_vis.add(pv.Area)
+					    .data(docClusters_dataArray)
+					    .fillStyle("#bf1717")
+					    .left(function() docClusters_x()(this.index))
+					    .height(function(d) docClusters_y()(d))
+					    .bottom(0);
+	
+					docClusters_vis.render();
+				}
+				else {
+					$('#chart2').append('<br><br>No SVG support detected');
+				}
+			  </script>
+		  </div>
 			<div id="chart6" class="ui-widget ui-widget-chart ui-corner-all" style="left: 850px; width: 250px; height: 250px; text-align: center;"><span id="chart6Title" class="ui-widget-chart-num">[chart6Title]</span><br>Image Clusters
 		    <script type="text/javascript+protovis">
 			  if (Modernizr.svg){
@@ -548,6 +427,46 @@ limitations under the License.
 					$('#chart6').append('<br><br>No SVG support detected');
 				}
 		    </script>
+			</div>
+			<div id="chart1" class="ui-widget ui-widget-chart ui-corner-all" style="left: 200px; width: 250px; height: 250px; text-align: center;"><span id="chart1Title" class="ui-widget-chart-num">[chart1Title]</span><br>Similar Devices Identified
+				<script type="text/javascript+protovis">
+				if (Modernizr.svg){
+					var forceLayout_w = 225,
+					    forceLayout_h = 185,
+					    forceLayout_colors = pv.Colors.category10();
+					
+					var forceLayout_vis = new pv.Panel()
+					    .width(forceLayout_w)
+					    .height(forceLayout_h)
+					    .event("mousedown", pv.Behavior.pan())
+					    .event("mousewheel", pv.Behavior.zoom());
+					
+					var forceLayout_force = forceLayout_vis.add(pv.Layout.Force)
+					    .nodes(deviceLinks.nodes)
+					    .links(deviceLinks.links)
+					    //.springLength(10)
+		    			.chargeConstant(-1000)
+					    .bound(true);
+					
+					forceLayout_force.link.add(pv.Line);
+					
+					forceLayout_force.node.add(pv.Dot)
+					    .size(function(d) (d.linkDegree + 4) * Math.pow(this.scale, -1.5))
+					    .fillStyle(function(d) d.fix ? "brown" : forceLayout_colors(d.group))
+					    .strokeStyle(function() this.fillStyle().darker())
+					    .lineWidth(1)
+					    .title(function(d) d.nodeName)
+					    .event("mouseover", pv.Behavior.tipsy({gravity: "s", fade: true}))
+					    .event("mouseout", pv.Behavior.tipsy.trigger)
+					    .event("mousedown", pv.Behavior.drag())
+					    .event("drag", forceLayout_force);
+					
+					forceLayout_vis.render();
+				}
+				else {
+					$('#chart1').append('<br><br>No SVG support detected');
+				}
+				</script>
 			</div>
 		</div>
 	</div>
