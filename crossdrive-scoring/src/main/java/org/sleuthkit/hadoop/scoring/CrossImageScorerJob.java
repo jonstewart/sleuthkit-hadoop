@@ -1,3 +1,19 @@
+/*
+   Copyright 2011 Basis Technology Corp.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ */
+
 package org.sleuthkit.hadoop.scoring;
 
 import java.io.ByteArrayOutputStream;
@@ -15,26 +31,35 @@ import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
 import org.apache.hadoop.hbase.util.Base64;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.sleuthkit.hadoop.JobNames;
 import org.sleuthkit.hadoop.SKJobFactory;
 import org.sleuthkit.hadoop.SKMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/** Performs a cross image scoring task to quantify similarity between one
+ * drive and others in the system. Based on the number of files which they
+ * have in commmon. THIS IMPLEMENTATION IS INCOMPLETE. 
+ * TODO: We need a way to get the number of images in the system for the 
+ * normalization to work properly.
+ */
 public class CrossImageScorerJob {
     public static final Logger LOG = LoggerFactory.getLogger(CrossImageScorerJob.class);
     
     public static enum FileCount { FILES };
     
-    public static void runPipeline(String imgID){
+    public static void runPipeline(String imgDir, String imgID, String friendlyName){
         try {
-            Path crossImageDir = new Path("/texaspete/data/" + imgID + "/crossimg/data/");
-            Path scoreDir = new Path("/texaspete/data/" + imgID + "/crossimg/scores/");
+            Path crossImageDir = new Path(imgDir + "/crossimg/data/");
+            Path scoreDir = new Path(imgDir + "/crossimg/scores/");
 
-            Job j = SKJobFactory.createJob(imgID, "FRIENDLYNAME", JobNames.CROSS_IMG_SIM_SCORING);
+            Job j = SKJobFactory.createJob(imgID, friendlyName, JobNames.CROSS_IMG_SIM_SCORING);
             j.setInputFormatClass(TableInputFormat.class);
             j.setOutputFormatClass(SequenceFileOutputFormat.class);
             j.setMapperClass(CrossImageScoreMapper.class);
@@ -68,43 +93,49 @@ public class CrossImageScorerJob {
             // get the files in this image from the hadoop counter.
             long filesInImage = j.getCounters().findCounter(FileCount.FILES).getValue();
 
-            j = SKJobFactory.createJob(imgID, "FRIENDLYNAME", JobNames.CROSS_IMG_SIM_SCORING_CALC);
-            j.getConfiguration().setLong(DocumentScoreMapper.FILES_IN_IMAGE, filesInImage);
+            j = SKJobFactory.createJob(imgID, friendlyName, JobNames.CROSS_IMG_SIM_SCORING_CALC);
+            j.getConfiguration().setLong(IIFScoreReducer.FILES_IN_IMAGE, filesInImage);
             // TODO: Get the number of images from the images table. This is pretty key for IIF.
-            j.getConfiguration().setLong(DocumentScoreMapper.TOTAL_IMAGES, 11);
+            j.getConfiguration().setLong(IIFScoreMapper.TOTAL_IMAGES, 11);
 
-            j.setMapperClass(DocumentScoreMapper.class);
-            j.setReducerClass(DoubleSumReducer.class);
-            j.setJarByClass(DocumentScoreMapper.class);
+            j.setMapperClass(IIFScoreMapper.class);
+            j.setReducerClass(IIFScoreReducer.class);
+            j.setJarByClass(IIFScoreMapper.class);
 
             j.setInputFormatClass(SequenceFileInputFormat.class);
-            j.setOutputFormatClass(SequenceFileOutputFormat.class);
+            j.setOutputFormatClass(TextOutputFormat.class);
 
             j.setMapOutputKeyClass(BytesWritable.class);
             j.setMapOutputValueClass(DoubleWritable.class);
 
-            j.setOutputKeyClass(BytesWritable.class);
-            j.setOutputValueClass(DoubleWritable.class);
-
+            j.setOutputKeyClass(NullWritable.class);
+            j.setOutputValueClass(Text.class);
+            // Because we're building a json object, we need to have exactly one reducer.
+            j.setNumReduceTasks(1);
 
             SequenceFileOutputFormat.setOutputPath(j, scoreDir);
             SequenceFileInputFormat.setInputPaths(j, crossImageDir);
 
             j.waitForCompletion(true);
+
+            CrossImageJSONOutputBuilder.buildReport(new Path(scoreDir, "part-r-00000"), new Path(imgDir + "/reports/data/crossimg.js"));
         } catch (IOException ex) {
-            LOG.error("Failure while performing HDFS file IO.", ex);            
+            LOG.error("Failure while performing HDFS file IO.", ex);
         } catch (ClassNotFoundException ex) {
-            LOG.error("Error running job; class not found.", ex);            
+            LOG.error("Error running job; class not found.", ex);
         } catch (InterruptedException ex) {
             LOG.error("Hadoop job interrupted.", ex);
         }
+        
+        
     }
     
     public static void main(String[] argv) {
-        if (argv.length != 1) {
-            System.out.println("Usage: CrossImageScorerJob <image_hash>");
+        if (argv.length != 3) {
+            System.out.println("Usage: CrossImageScorerJob <img_dir> <image_hash> <friendly_name>");
+            System.exit(1);
         }
-        runPipeline(argv[0]);
+        runPipeline(argv[0], argv[1], argv[2]);
     }
     
     static String convertScanToString(Scan scan) throws IOException {
@@ -121,6 +152,6 @@ public class CrossImageScorerJob {
         }
 
         return Base64.encodeBytes(out.toByteArray());
-      }
+    }
 
 }

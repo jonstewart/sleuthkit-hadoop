@@ -92,7 +92,7 @@ public class FsEntryUtils {
     final byte[] path_md5 = hasher.digest();
 
     // build the key
-    result[0] =  path_md5[0];
+    result[0] = path_md5[0];
     int off = 1;
     off = Bytes.putBytes(result, off, img_md5, 0, img_md5.length);
     off = Bytes.putBytes(result, off, path_md5, 1, path_md5.length-1);
@@ -100,7 +100,7 @@ public class FsEntryUtils {
   }
 
   public static byte[] getImageID(byte[] entryID) {
-    byte[] imgID = new byte[16];
+    final byte[] imgID = new byte[16];
     getImageID(imgID, entryID);
     return imgID;
   }
@@ -111,5 +111,31 @@ public class FsEntryUtils {
 
   public static int getImageID(byte[] imgID, byte[] entryID, int offset) {
     return Bytes.putBytes(imgID, 0, entryID, offset + 1, 16);
+  }
+
+/*
+  public static byte[] getPathHash(byte[] entryID) {
+    final byte[] path = new byte[16];
+    path[0] = entryID[0];
+    Bytes.putBytes(path, 1, entryID, 17, 15);
+    return path;
+  }
+
+  public static int getDirIndex(byte[] entryID) {
+    return Bytes.toInt(entryID, 32);
+  }
+*/
+
+  public static byte[] nextFsEntryKey(byte[] entryID) {
+    final byte[] next = new byte[entryID.length];
+    System.arraycopy(entryID, 0, next, 0, next.length);
+
+    for (int i = next.length - 1; i >= 0; --i) {
+      if ((++next[i] & 0xFF) > 0) {
+        return next;
+      }
+    }
+
+    return next;
   }
 }

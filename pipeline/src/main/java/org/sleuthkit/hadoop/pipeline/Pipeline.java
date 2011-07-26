@@ -18,16 +18,20 @@
 
 package org.sleuthkit.hadoop.pipeline;
 
-import org.sleuthkit.hadoop.ClusterDocuments;
+import org.sleuthkit.hadoop.ClusterDocumentsJob;
 import org.sleuthkit.hadoop.FSEntryTikaTextExtractor;
 import org.sleuthkit.hadoop.GrepReportGenerator;
 import org.sleuthkit.hadoop.GrepSearchJob;
 import org.sleuthkit.hadoop.SequenceFsEntryText;
 import org.sleuthkit.hadoop.TokenizeAndVectorizeDocuments;
+import org.sleuthkit.hadoop.scoring.CrossImageScorerJob;
 
 import com.lightboxtechnologies.spectrum.HBaseTables;
 import com.lightboxtechnologies.spectrum.HDFSArchiver;
 
+/** Runs all of the post-ingest tasks on the hadoop cloud, one after another. 
+ * TODO: we could parallelize much of the things that happen here, as although
+ * they run in sequence, many of them are not dependent on each other to run. */
 public class Pipeline {
   // A file containing lines of text, each of which represents a regex.
   public static final String GREP_KEYWORDS = "/texaspete/regexes";
@@ -54,10 +58,12 @@ public class Pipeline {
     boolean filesToSequence = (SequenceFsEntryText.runPipeline(seqDumpDirectory, imageID, friendlyName));
     if (filesToSequence) {
       TokenizeAndVectorizeDocuments.runPipeline(seqDumpDirectory, tokenDumpDirectory, vectorDumpDirectory);
-      ClusterDocuments.runPipeline(vectorDumpDirectory + "/tfidf-vectors/", clusterDumpDirectory, dictionaryDumpDirectory, .65, .65, imageID, friendlyName);
+      ClusterDocumentsJob.runPipeline(vectorDumpDirectory + "/tfidf-vectors/", clusterDumpDirectory, dictionaryDumpDirectory, .65, .65, imageID, friendlyName, prefix);
 
     }
-    GrepReportGenerator.runPipeline(GREP_KEYWORDS, imageID, friendlyName);
+    GrepReportGenerator.runPipeline(GREP_KEYWORDS, imageID, friendlyName, prefix);
+    
+    CrossImageScorerJob.runPipeline(prefix, imageID, friendlyName);
 
     HDFSArchiver.runPipeline(prefix + "/reports", prefix + "/reports.zip");
   }

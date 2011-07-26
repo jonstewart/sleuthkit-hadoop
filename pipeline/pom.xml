@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.sleuthkit</groupId>
   <artifactId>sleuthkit-pipeline</artifactId>
@@ -13,29 +13,40 @@
     <artifactId>sleuthkit-hadoop</artifactId>
     <version>1-SNAPSHOT</version>
   </parent>
-
   <build>
     <defaultGoal>install</defaultGoal>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.2.1</version>
-        <executions>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>1.4</version>
+	<executions>
           <execution>
-            <id>job</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-       	      <finalName>sleuthkit-pipeline-r${timestamp}</finalName>
-              <descriptors>
-                <descriptor>src/main/assembly/job.xml</descriptor>
-              </descriptors>
-            </configuration>
+	    <id>job</id>
+	    <phase>package</phase>
+	    <goals>
+	      <goal>shade</goal>
+	    </goals>
+	    <configuration>
+       	      <finalName>sleuthkit-pipeline-r${timestamp}-job</finalName>
+	      <shadedArtifactAttached>true</shadedArtifactAttached>
+	      <shadedClassifierName>job</shadedClassifierName>
+	      <artifactSet>
+		<includes>
+		  <include>org.sleuthkit:sleuthkit-clustering</include>
+		  <include>org.sleuthkit:sleuthkit-textextraction</include>
+		  <include>org.sleuthkit:sleuthkit-grep</include>
+		  <include>org.sleuthkit:sleuthkit-pipeline</include>
+		  <include>org.sleuthkit:sleuthkit-core</include>
+		  <include>org.sleuthkit:sleuthkit-crossdrive-scoring</include>
+		  
+		  <include>org.apache.mahout:*</include>
+		 
+		</includes>
+	      </artifactSet>
+	    </configuration>
           </execution>
-        </executions>
+	</executions>
       </plugin>
     </plugins>
   </build>
@@ -45,59 +56,60 @@
     <dependency>
       <groupId>org.sleuthkit</groupId>
       <artifactId>sleuthkit-clustering</artifactId>
-      <classifier>job</classifier>
       <version>1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.sleuthkit</groupId>
       <artifactId>sleuthkit-grep</artifactId>
       <version>1-SNAPSHOT</version>
-      <classifier>job</classifier>
     </dependency>
-     <dependency>
+    <dependency>
       <groupId>org.sleuthkit</groupId>
       <artifactId>sleuthkit-textextraction</artifactId>
       <version>1-SNAPSHOT</version>
-      <classifier>job</classifier>
     </dependency> 
-     <dependency>
+    <dependency>
       <groupId>org.sleuthkit</groupId>
       <artifactId>sleuthkit-core</artifactId>
       <version>1-SNAPSHOT</version>
     </dependency> 
-     <dependency>
+    <dependency>
       <groupId>org.sleuthkit</groupId>
       <artifactId>sleuthkit-crossdrive-scoring</artifactId>
       <version>1-SNAPSHOT</version>
-      <classifier>job</classifier>
     </dependency> 
     <!-- other dependencies -->
+    <dependency>
+      <groupId>org.apache.mahout</groupId>
+      <artifactId>mahout-core</artifactId>
+      <version>0.5</version>
+      <classifier>job</classifier>
+    </dependency>
   </dependencies>
   <profiles>
     <profile>
-      <id>release</id>
+      <id>dependency-package</id>
       <build>
 	<plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.2.1</version>
-        <executions>
-          <execution>
-            <id>job</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-	      <finalName>${project.build.finalName}</finalName>
-              <descriptors>
-                <descriptor>src/main/assembly/job.xml</descriptor>
-              </descriptors>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+	  <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <version>2.2.1</version>
+            <executions>
+              <execution>
+		<id>job</id>
+		<phase>package</phase>
+		<goals>
+		  <goal>single</goal>
+		</goals>
+		<configuration>
+		  <descriptors>
+                    <descriptor>src/main/assembly/lib.xml</descriptor>
+		  </descriptors>
+		</configuration>
+              </execution>
+            </executions>
+	  </plugin>
 	</plugins>
       </build>
     </profile>

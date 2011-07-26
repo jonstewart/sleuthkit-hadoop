@@ -22,12 +22,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.LocalFileSystem;
-import org.apache.hadoop.hbase.HColumnDescriptor;
-import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.TableExistsException;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
@@ -47,6 +43,7 @@ import org.apache.commons.logging.LogFactory;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Closeable;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -108,28 +105,10 @@ public class ExtractMapper
       throw new RuntimeException(e);
     }
 
-    // ensure that the hash table exists
-    final HBaseAdmin admin = new HBaseAdmin(conf);
-    if (!admin.tableExists(HBaseTables.HASH_TBL_B)) {
-      final HTableDescriptor tableDesc =
-        new HTableDescriptor(HBaseTables.HASH_TBL_B);
-      if (!tableDesc.hasFamily(HBaseTables.HASH_COLFAM_B)) {
-        final HColumnDescriptor colFamDesc =
-          new HColumnDescriptor(HBaseTables.HASH_COLFAM_B);
-        colFamDesc.setCompressionType(Compression.Algorithm.GZ);
-        tableDesc.addFamily(colFamDesc);
-      }
-      try {
-        admin.createTable(tableDesc);
-      }
-      catch (TableExistsException e) {
-        LOG.info("Tried to create the hash table, but it already exists. Probably just lost a race condition.");
-      }
-    }
-    else if (!admin.isTableEnabled(HBaseTables.HASH_TBL_B)) {
-    	admin.enableTable(HBaseTables.HASH_TBL_B);
-    }
-    HashTbl = new HTable(conf, HBaseTables.HASH_TBL_B);
+    // get the tables
+    HashTbl = HBaseTables.summon(
+      conf, HBaseTables.HASH_TBL_B, HBaseTables.HASH_COLFAM_B
+    );
 
     EntryTbl =
       FsEntryHBaseOutputFormat.getHTable(context, HBaseTables.ENTRIES_TBL_B);
@@ -217,9 +196,20 @@ public class ExtractMapper
 
     final Path[] files = DistributedCache.getLocalCacheFiles(conf);
     if (files != null && files.length > 0) {
+      String extentsname = conf.get("com.lbt.extentsname");
       final LocalFileSystem localfs = FileSystem.getLocal(conf);
-      LOG.info("Opening extents file " + files[0]);
-      extents = new SequenceFile.Reader(localfs, files[0], conf);
+      boolean found = false;
+      for (Path p: files) {
+        if (p.getName().equals(extentsname)) {
+          found = true;
+          LOG.info("Opening extents file " + p);
+          extents = new SequenceFile.Reader(localfs, p, conf);
+          break;
+        }
+      }
+      if (!found) {
+        LOG.warn("Could not find extents file in local cache named " + extentsname);
+      }
     }
     else if (files == null) {
       throw new RuntimeException("No file paths retrieved from distributed cache");
@@ -443,9 +433,20 @@ public class ExtractMapper
     }
   }
 
+  void closeTable(HTable tbl) {
+    try {
+      tbl.close();
+    }
+    catch (IOException e) {
+      ;
+    }
+  }
+
   @Override
   protected void cleanup(Mapper.Context context) {
     IOUtils.closeQuietly(ImgFile);
+    closeTable(HashTbl);
+    closeTable(EntryTbl);
   }
 
   public static String hashFolder(String hash) {

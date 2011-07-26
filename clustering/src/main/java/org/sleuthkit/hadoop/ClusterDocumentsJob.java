@@ -17,47 +17,57 @@
 package org.sleuthkit.hadoop;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.ArrayWritable;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
-import org.apache.mahout.clustering.Cluster;
-import org.apache.mahout.clustering.WeightedVectorWritable;
 import org.apache.mahout.clustering.canopy.CanopyDriver;
 import org.apache.mahout.clustering.kmeans.KMeansDriver;
 import org.apache.mahout.common.distance.CosineDistanceMeasure;
-import org.apache.mahout.math.NamedVector;
-import org.apache.mahout.math.Vector;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ClusterDocuments {
-    public static final Logger LOG = LoggerFactory.getLogger(ClusterDocuments.class);
+/** Contains routines for clustering hard drive document data which has been
+ *  previously tokenized and vectorized.
+ */
+public class ClusterDocumentsJob {
+    public static final Logger LOG = LoggerFactory.getLogger(ClusterDocumentsJob.class);
 
     public static void main(String[] argv) {
         if (argv.length < 5) {
-            System.out.println("Usage: ClusterDocuments <input_dir> <output_dir> <dictionary_file> <t1> <t2> <image_hash> <friendly_name>");
+            System.out.println("Usage: ClusterDocuments <input_dir> <output_dir> <dictionary_file> <t1> <t2> <image_hash> <friendly_name> <img_id>");
             System.exit(1);
         }
-        runPipeline(argv[0], argv[1], argv[2], .65, .65, argv[3], argv[4]);
+        runPipeline(argv[0], argv[1], argv[2], .65, .65, argv[3], argv[4], argv[5]);
     }
 
-    public static int runPipeline(String input, String output, String dictionary, double t1, double t2, String imageID, String friendlyName) {
+    /**
+     * Runs the clutering algorithms on the tfidf vectors that have been placed in
+     * sequence files in directory 'input', and puts raw cluster/json data in
+     * 'output'. Also puts json reporting data in the reports/data folder.
+     * @param input The sequence files to cluster on.
+     * @param output The output directory for raw canopy/kmeans cluster data.
+     * @param dictionary The dictionary vector which maps the indices of the vectors
+     * to words.
+     * @param t1 The t1 value for canopy clustering. The distance measure for
+     * canopy is CosineDistanceMeasure, so this should be a value between 0 and 1.
+     * @param t2 The t2 value for canopy clustering. Again, should be between
+     * t1 and 1. A smaller distance beween the two results in more clusters;
+     * a greater distance results in fewer.
+     * @param imageID The hash of the image.
+     * @param friendlyName The friendly, user given name of the image.
+     * @param baseDir The base directory where output data for this image
+     * is stored. Used to place the reporting data in the correct location.
+     * @return A status code; will be non-zero if the task failed.
+     */
+    public static int runPipeline(String input, String output, String dictionary, double t1, double t2, String imageID, String friendlyName, String baseDir) {
         Configuration conf = new Configuration();
         conf.set("mapred.child.java.opts", "-Xmx4096m");
         Path canopyInputPath = new Path(input);
@@ -78,6 +88,10 @@ public class ClusterDocuments {
             return 1;
         }
 
+        // The convergencedelta and maxiterations affect how long kmeans will
+        // take to run and how many times we run the algorithm before we give
+        // up. The numbers we are using here seem to give reasonably good
+        // results.
         try {
             KMeansDriver.run(conf, kmeansInputPath, kmeansClusters, kmeansOutputPath, new CosineDistanceMeasure(), .5, 20, true, false);
         } catch (Exception e) {
@@ -90,7 +104,7 @@ public class ClusterDocuments {
             // Output top cluster matches //
             ////////////////////////////////
             Job job = SKJobFactory.createJob(imageID, friendlyName, JobNames.OUTPUT_CLUSTER_MATCH);
-            job.setJarByClass(ClusterDocuments.class);
+            job.setJarByClass(TopFeatureMapper.class);
 
 
             // Get the final kmeans iteration. This is sort of a pain but for
@@ -111,7 +125,7 @@ public class ClusterDocuments {
             FileInputFormat.setInputPaths(job, goodPath);
             FileOutputFormat.setOutputPath(job, new Path(output + "/kmeans/topClusters/"));
 
-            job.setMapperClass(ClusterDocuments.TopPointsMapper.class);
+            job.setMapperClass(TopFeatureMapper.class);
             job.setMapOutputKeyClass(NullWritable.class);
             job.setMapOutputValueClass(Text.class);
             // We need to reduce serially.
@@ -133,12 +147,12 @@ public class ClusterDocuments {
             ////////////////////////////////
             
             job = SKJobFactory.createJob(imageID, friendlyName, JobNames.OUTPUT_CLUSTER_JSON);
-            job.setJarByClass(ClusterDocuments.class);
+            job.setJarByClass(JSONClusterNameMapper.class);
 
             FileInputFormat.setInputPaths(job, new Path(output + "/kmeans/clusteredPoints/"));
             FileOutputFormat.setOutputPath(job, new Path(output + "/kmeans/jsonClusteredPoints/"));
 
-            job.setMapperClass(ClusterDocuments.JSONClusterMapper.class);
+            job.setMapperClass(JSONClusterNameMapper.class);
             job.setMapOutputKeyClass(NullWritable.class);
             job.setMapOutputValueClass(Text.class);
             // again, we need to reduce serially. We are crafting a single json object and so we must
@@ -152,12 +166,14 @@ public class ClusterDocuments {
             job.setOutputFormatClass(TextOutputFormat.class);
 
             job.waitForCompletion(true);
-            
-            
+
+            // Note that, since we limit the number of reduce tasks to 1, there should only be
+            // one reduce 'part'.
+
             ClusterJSONBuilder.buildReport(
                     new Path(output + "/kmeans/topClusters/part-r-00000"), 
                     new Path(output + "/kmeans/jsonClusteredPoints/part-r-00000"),
-                    new Path("/texaspete/data/" + imageID +  "/reports/data/documents.js"));
+                    new Path(baseDir + "/reports/data/documents.js"));
             return 0;
         } catch (IOException ex) {
             LOG.error("Failure while performing HDFS file IO.", ex);            
@@ -171,120 +187,4 @@ public class ClusterDocuments {
         
     }
     
-
-    // Aggregates vector names and their associated clusters
-    public static class ClusterMapper
-    extends Mapper<IntWritable, WeightedVectorWritable, IntWritable, Text> {
-
-        @Override
-        public void map(IntWritable key, WeightedVectorWritable value, Context context)
-        throws IOException {
-            String name = "";
-            Vector v = value.getVector();
-            if (v instanceof NamedVector) {
-                name =((NamedVector)v).getName();
-            }
-
-            try {
-                context.write(key, new Text(name));
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-    
-    
-    // Aggregates vector names and their associated clusters, and outputs JSON.
-    public static class JSONClusterMapper
-    extends Mapper<IntWritable, WeightedVectorWritable, NullWritable, Text> {
-
-        @Override
-        public void map(IntWritable key, WeightedVectorWritable value, Context context)
-        throws IOException {
-            String name = "";
-            Vector v = value.getVector();
-            if (v instanceof NamedVector) {
-                name =((NamedVector)v).getName();
-            }
-
-            try {
-                JSONObject object = new JSONObject();
-                object.put("a", key.get());
-                object.put("fP", name);
-                context.write(NullWritable.get(), new Text(object.toString()));
-                //context.write(key, new Text(name));
-                //context.write(new Text(), new Text("{a:" + key + ", fP:\"" + name + "\"},"));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    // Generates text listing the top 10 features of the vectors we are
-    // using as centroids for our clusters.
-    public static class TopPointsMapper
-    extends Mapper<Text, Cluster, NullWritable, Text> {
-        String[] dictionaryVector;
-
-        @Override
-        public void setup(Context context) {
-            String path = context.getConfiguration().get("org.sleuthkit.hadoop.dictionary");
-
-            try {
-                //FSDataInputStream in = fs.open(inFile);
-                dictionaryVector = ClusterUtil.loadTermDictionary(context.getConfiguration(), FileSystem.get(context.getConfiguration()), path);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        @Override
-        public void map(Text key, Cluster value, Context context)
-        throws IOException {
-            Vector v = value.getCenter();
-            value.getNumPoints();
-            
-            JSONObject obj = new JSONObject();
-            try {
-                int i = Integer.parseInt(key.toString().substring(3));
-                obj.put("a", i);
-                obj.put("n", value.getNumPoints());
-                obj.put("kw", ClusterUtil.getTopFeatures(v, dictionaryVector, 10));
-            } catch (JSONException ex) {
-                ex.printStackTrace();
-            } catch (NumberFormatException ex) {
-                System.out.println("Could not Parse Cluster name to number.");
-                ex.printStackTrace();
-            }
-
-            try {
-                context.write(NullWritable.get(), new Text(obj.toString()));
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-
-    }
-
-    // There should be no duplicates, but we'll use the set reducer anyways
-    // as it is convenient and already written.
-    public static class SetReducer extends Reducer<IntWritable, Text, IntWritable, ArrayWritable>{
-        @Override
-        public void reduce(IntWritable key, Iterable<Text> values,
-                Context ctx)
-        throws IOException {
-
-            Set<String> s = new HashSet<String>();
-
-            for (Text t : values) {
-                s.add(t.toString());
-            }
-            String[] str = new String[1];
-            try {
-                ctx.write(key, new ArrayWritable(s.toArray(str)));
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }

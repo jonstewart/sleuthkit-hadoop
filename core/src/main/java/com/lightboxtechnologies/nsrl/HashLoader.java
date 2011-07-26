@@ -35,6 +35,8 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 
+import org.sleuthkit.hadoop.SKJobFactory;
+
 /**
  * An MR job to load NSRL hash data to HBase.
  *
@@ -124,9 +126,9 @@ public class HashLoader {
     final String[] otherArgs =
       new GenericOptionsParser(conf, args).getRemainingArgs();
 
-    if (otherArgs.length != 5) {
+    if (otherArgs.length != 6) {
       System.err.println(
-        "Usage: HashLoader <mfgfile> <osfile> <prodfile> <hashfile> <outpath>"
+        "Usage: HashLoader <mfgfile> <osfile> <prodfile> <hashfile> <outpath> <num_reducers>"
       );
       System.exit(2);
     }
@@ -142,12 +144,13 @@ public class HashLoader {
     conf.set("prod_filename", prod_filename);
 
     conf.setLong("timestamp", System.currentTimeMillis());
+    SKJobFactory.addDependencies(conf);
 
     final Job job = new Job(conf, "HashLoader");
     job.setJarByClass(HashLoader.class);
     job.setMapperClass(HashLoaderMapper.class);
     job.setReducerClass(KeyValueSortReducer.class);
-    job.setNumReduceTasks(1);
+    job.setNumReduceTasks(Integer.parseInt(otherArgs[5]));
 
     job.setOutputKeyClass(ImmutableBytesWritable.class);
     job.setOutputValueClass(KeyValue.class);

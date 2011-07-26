@@ -21,6 +21,8 @@ import org.apache.commons.codec.binary.Hex;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+import java.util.Arrays;
+
 import static com.lightboxtechnologies.spectrum.FsEntryUtils.*;
 
 /**
@@ -55,6 +57,37 @@ public class FsEntryUtilsTest {
     };
 
     assertArrayEquals(expected, makeFsEntryKey(img_md5, path, dir_index));
+  }
+
+  @Test
+  public void nextFsEntryKeyTestFirst() {
+    final byte[] expected = new byte[36];
+    expected[35] = 1;
+    
+    final byte[] key = new byte[36];
+
+    assertArrayEquals(expected, nextFsEntryKey(key));
+  }
+
+  @Test
+  public void nextFsEntryKeyTestCarry() {
+    final byte[] expected = new byte[36];
+    expected[0] = 1;
+    
+    final byte[] key = new byte[36];
+    Arrays.fill(key, 1, key.length, (byte) 0xFF);
+
+    assertArrayEquals(expected, nextFsEntryKey(key));
+  }
+
+  @Test
+  public void nextFsEntryKeyTestLast() {
+    final byte[] expected = new byte[36];
+    
+    final byte[] key = new byte[36];
+    Arrays.fill(key, (byte) 0xFF);
+
+    assertArrayEquals(expected, nextFsEntryKey(key));
   }
 
   @Test

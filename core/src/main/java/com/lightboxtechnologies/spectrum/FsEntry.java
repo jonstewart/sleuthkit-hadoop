@@ -154,17 +154,25 @@ public class FsEntry extends HashMap<String,Object> {
 
   boolean isContentHDFS() {
     StreamProxy proxy = Streams.get("Content");
-    return proxy != null && proxy instanceof BufferProxy;
+    return proxy != null && proxy instanceof FileProxy;
   }
 
   byte[] getContentBuffer() {
-    BufferProxy p = (BufferProxy)Streams.get("Content");
-    return p.getBuffer();
+    StreamProxy proxy = Streams.get("Content");
+    if (proxy != null && proxy instanceof BufferProxy) {
+      BufferProxy p = (BufferProxy)proxy;
+      return p.getBuffer();
+    }
+    return null;
   }
 
   String getContentHdfsPath() {
-    FileProxy p = (FileProxy)Streams.get("Content");
-    return p.getPath();
+    StreamProxy proxy = Streams.get("Content");
+    if (proxy != null && proxy instanceof FileProxy) {
+      FileProxy p = (FileProxy)proxy;
+      return p.getPath();
+    }
+    return "";
   }
 
   public boolean hasMetadata() {
@@ -221,6 +229,8 @@ public class FsEntry extends HashMap<String,Object> {
     return buf.toString();
   }
 
+// FIXME: problematic getters
+//////////////////////////////
   public Date getCreated() {
     return Created;
   }
@@ -240,6 +250,7 @@ public class FsEntry extends HashMap<String,Object> {
   public long getSize() {
     return Size;
   }
+//////////////////////////
 
   private static Date addDate(Map<String,Object> map, String name, Map<String,Object> rec, String recName) {
     if (rec.containsKey(recName)) {

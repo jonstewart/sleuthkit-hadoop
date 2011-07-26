@@ -1,6 +1,4 @@
 /*
-reports/data/index.html
-
 Copyright 2011, Lightbox Technologies, Inc
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,9 +17,8 @@ limitations under the License.
 var menuList = [
   {a: "Overview", link: "index.html"},
   {a: "Search Hits", link: "searchhits.html"},
-  {a: "Entities", link: "entities.html"},
-  {a: "Known Bad", link: "knownbad.html"},
   {a: "Document Clusters", link: "documents.html"},
-  {a: "Graphics", link: "graphics.html"},
+  {a: "Graphics", link: "graphics.html?p=faces"},
   {a: "Similar Devices", link: "linkanalysis.html"}
+//  {a: "Job Configuration", link: "jobconfig.html"}
 ];

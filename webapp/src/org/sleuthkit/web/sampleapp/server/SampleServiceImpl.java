@@ -50,8 +50,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 public class SampleServiceImpl extends RemoteServiceServlet implements SampleService {
 	
 	/** job names in hadoop  order of analysis progress (first job - before it appears in hadoop) */
-	private static String jobStepNames[] = {"UploadingIntoHadoop", "TikaTextExtraction", "GrepSearch", "GrepCountJson", "GrepMatchJson", "GrepMatchesToSequenceFiles", "TopClusterMatchPrinting", 
-		"ClusteredVectorsToJson", "CrossImageSimilarityScoring", "CrossImageScoreCalculation"};
+	private static String jobStepNames[] = {"UploadingIntoHadoop", "ExtentsExtractor", "TikaTextExtraction", "GrepSearch", "GrepCountJson", "GrepMatchJson", 
+		"GrepMatchesToSequenceFiles", "TopClusterMatchPrinting", "ClusteredVectorsToJson", "CrossImageSimilarityScoring", "CrossImageScoreCalculation"};
 	
 	static ResourceBundle rb = null;
 	/** properties defined in resource file */
@@ -126,9 +126,8 @@ public class SampleServiceImpl extends RemoteServiceServlet implements SampleSer
      * @throws Exception
      */
 	public String runAsync(String fileName, String id) throws IllegalArgumentException {		
-		if (!imagesSubmitted.containsKey(id)) {
-			imagesSubmitted.put(id, Calendar.getInstance().getTime());
-		}
+		imagesSubmitted.put(id, Calendar.getInstance().getTime());
+
 	    try {
 	    	 ProcessBuilder pb = new ProcessBuilder(commandScript, id, fileName, commandJar);
 	    	 pb.directory(new File(workDir));
@@ -136,8 +135,12 @@ public class SampleServiceImpl extends RemoteServiceServlet implements SampleSer
 	    	 
 	    	 env.put("LD_LIBRARY_PATH", SampleServiceImpl.fsripLib);
 	    	 env.put("HADOOP_HOME", SampleServiceImpl.hadoopHome);
-	    	 env.put("PATH", env.get("PATH") + SampleServiceImpl.path);
+	    	 env.put("PATH", SampleServiceImpl.path);
 
+			 System.err.println("LD_LIBRARY_PATH = " + env.get("LD_LIBRARY_PATH"));
+			 System.err.println("HADOOP_HOME = " + env.get("HADOOP_HOME"));
+			 System.err.println("PATH = " + env.get("PATH"));
+			 System.err.println("Work Dir = " + pb.directory().getPath());
 	    	 pb.start();
 	    }
 	    catch (Throwable t) {
@@ -229,24 +232,38 @@ public class SampleServiceImpl extends RemoteServiceServlet implements SampleSer
      */
 	private void processJob(List<String[]> tableOfJobs, String[] parsedJobName, JobStatus js, RunningJob rj) throws IOException {
 
-		String[]colData = findOrCreateJobRow(tableOfJobs, parsedJobName[1], parsedJobName[2]);
-		int jobInd = (colData[IMAGE_ID] == null) ? -1 : getJobIndex(colData[IMAGE_ID]);
+		String[]row = findOrCreateJobRow(tableOfJobs, parsedJobName[1], parsedJobName[2]);
+		int jobInd = (row[IMAGE_ID] == null) ? -1 : getJobIndex(row[IMAGE_ID]);
 		int thisJobInd = getJobIndex(parsedJobName[3]);
+
+		//need to update the same job index too to report progress
+		row[IMAGE_ID] = parsedJobName[1];	//hash
+		row[JOB_NAME] = parsedJobName[2];	//id
+
 		if (thisJobInd < 0) {
+			//ignore it if we already have a task
 			//this should not happen: report error and continue
 			System.err.println("Unknown job step " + parsedJobName[3] + " for image hash " + parsedJobName[1]);
-			colData[IMAGE_ID] = parsedJobName[1];
+			row[CUR_TASK] = parsedJobName[3];	//state
+			row[TASK_STATUS] = getSimpleJobStatus(rj.getJobState());	//status
+			setRowData(row, js);
 		}
 		else if (thisJobInd >= jobInd) {
-			//need to update the same job index too to report progress
-			colData[JOB_NAME] = parsedJobName[2];	//id
-			colData[IMAGE_ID] = parsedJobName[1];	//hash
-			colData[CUR_TASK] = parsedJobName[3];	//state
-			colData[TASK_STATUS] = getJobStatus(jobStepNames[jobStepNames.length-1].compareTo(parsedJobName[3]) == 0, rj.getJobState(), parsedJobName[1]);	//status
-			colData[TIME_START] = new SimpleDateFormat(DATE_FORMAT).format(new Date(js.getStartTime()));			 
-			colData[MAP_PROGR] = Integer.toString(((int)js.mapProgress())*100) + "%";
-			colData[REDUCE_PROGR] = Integer.toString(((int)js.reduceProgress())*100) + "%";
+			row[CUR_TASK] = parsedJobName[3];	//state
+			row[TASK_STATUS] = getJobStatus(jobStepNames[jobStepNames.length-1].compareTo(parsedJobName[3]) == 0, rj.getJobState(), parsedJobName[1]);	//status
+			setRowData(row, js);
 		}
+	}
+	
+    /**
+     * set data for some columns of one row
+     * @param row row data
+     * @param js hadoop job status
+     */
+	private void setRowData(String[]row, JobStatus js) {
+		row[TIME_START] = new SimpleDateFormat(DATE_FORMAT).format(new Date(js.getStartTime()));			 
+		row[MAP_PROGR] = Integer.toString((int)(js.mapProgress()*100)) + "%";
+		row[REDUCE_PROGR] = Integer.toString((int)(js.reduceProgress()*100)) + "%";
 	}
 	
     /**
@@ -295,6 +312,16 @@ public class SampleServiceImpl extends RemoteServiceServlet implements SampleSer
 		if (isFinalStep && status == JobStatus.SUCCEEDED) {
 			return makeReportLink(imageHash);
 		}
+		return getSimpleJobStatus(status);
+	}
+	
+    /**
+     * get simple job status
+     * @param status hadoop job status
+     * @return job status
+     * @throws Exception
+     */
+	private String getSimpleJobStatus(int status) throws IOException {
 		switch (status) {		
 			case JobStatus.FAILED: return "failed";
 			case JobStatus.KILLED: return "killed";

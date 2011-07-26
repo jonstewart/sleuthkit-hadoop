@@ -1,5 +1,23 @@
 #!/bin/sh
 
+# /*
+#    Copyright 2011, Lightbox Technologies, Inc
+# 
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+# 
+#        http://www.apache.org/licenses/LICENSE-2.0
+# 
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+# */
+
+#set -x
+
 if [ $# -ne 3 ] && [ $# -ne 4 ]
 then
   echo "Usage: tpkickoff.sh image_friendly_name image_path jar_dir"
@@ -22,7 +40,16 @@ FriendlyName=$1
 ImagePath=$2
 JarDir=$3
 
-JarFile=`ls $JarDir/sleuthkit-pipeline-r*-job.jar | sort | tail -n 1`
+export LD_LIBRARY_PATH=/home/uckelman/projects/lightbox/fsrip/deps/lib
+FSRIP=/home/uckelman/projects/lightbox/fsrip/build/src/fsrip
+
+HADOOP=/usr/bin/hadoop
+
+JarFile=`ls -r $JarDir/sleuthkit-pipeline-r*-job.jar | head -n 1`
+if [ $? -ne 0 ]; then
+  echo "failed to find pipeline JAR"
+  exit 1
+fi
 
 JsonFile=$FriendlyName.json
 HdfsImage=$FriendlyName.dd
@@ -30,25 +57,56 @@ HdfsImage=$FriendlyName.dd
 echo "jar file is ${JarFile}"
 
 # rip filesystem metadata, upload to hdfs
-fsrip dumpfs $ImagePath | $HADOOP_HOME/bin/hadoop jar $JarFile com.lightboxtechnologies.spectrum.Uploader $JsonFile
+$FSRIP dumpfs $ImagePath | $HADOOP jar $JarFile com.lightboxtechnologies.spectrum.Uploader $JsonFile
+if [ $? -ne 0 ]; then
+  echo "image metadata upload failed"
+  exit 1
+fi
+echo "done uploading metadata"
 
 # upload image to hdfs
-ImageID=`cat $ImagePath | $HADOOP_HOME/bin/hadoop jar $JarFile com.lightboxtechnologies.spectrum.Uploader $HdfsImage`
-echo "done uploading"
-if [ $# -eq 4 ]
-  then
+ImageID=`$FSRIP dumpimg $ImagePath | $HADOOP jar $JarFile com.lightboxtechnologies.spectrum.Uploader $HdfsImage`
+if [ $? -ne 0 ]; then
+  echo "image upload failed"
+  exit 1
+fi
+echo "done uploading image"
+
+if [ $# -eq 4 ]; then
   ImageID=$4
 fi
 echo "Image ID is ${ImageID}"
 
+# rip image info, insert in hbase
+$FSRIP info $ImagePath | $HADOOP jar $JarFile com.lightboxtechnologies.spectrum.InfoPutter $ImageID $FriendlyName
+if [ $? -ne 0 ]; then
+  echo "image info registration failed"
+  exit 1
+fi
+echo "image info registered"
+
 # kick off ingest
-$HADOOP_HOME/bin/hadoop jar $JarFile org.sleuthkit.hadoop.pipeline.Ingest $ImageID $HdfsImage $JsonFile
+$HADOOP jar $JarFile org.sleuthkit.hadoop.pipeline.Ingest $ImageID $HdfsImage $JsonFile $FriendlyName
+if [ $? -ne 0 ]; then
+  echo "ingest failed"
+  exit 1
+fi
 echo "done with ingest"
 
 # copy reports template
-$HADOOP_HOME/bin/hadoop fs -cp /texaspete/templates/reports /texaspete/data/$ImageID/
+$HADOOP fs -cp /texaspete/templates/reports /texaspete/data/$ImageID/
+if [ $? -ne 0 ]; then
+  echo "copying reports template failed"
+  exit 1
+fi
+echo "reports template copied"
 
 # kick off pipeline
-$HADOOP_HOME/bin/hadoop jar $JarFile org.sleuthkit.hadoop.pipeline.Pipeline $ImageID $FriendlyName
+$HADOOP jar $JarFile org.sleuthkit.hadoop.pipeline.Pipeline $ImageID $FriendlyName
+if [ $? -ne 0 ]; then
+  echo "pipeline failed"
+  exit 1
+fi
+echo "pipeline completed"
 
 date
