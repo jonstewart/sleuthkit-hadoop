@@ -171,6 +171,7 @@ public class FsEntryHBaseInputFormat extends InputFormat implements Configurable
 
       First = first;
       Last = last;
+      LOG.info("Scanning range " + First.toString() + " to " + Last.toString());
     }
 
     public void close() throws IOException {
@@ -211,17 +212,17 @@ public class FsEntryHBaseInputFormat extends InputFormat implements Configurable
 
           final byte[] jumpkey =
             FsEntryUtils.nextFsEntryKey(getCurrentKey().get());
+          LOG.info("jumpkey is " + jumpkey.toString());
 
           if (Bytes.compareTo(jumpkey, Last) < 0) {
             ((TableRecordReader) TblReader).restart(jumpkey);
-            LOG.info("jumping to " + Hex.encodeHexString(jumpkey));
-          }
-          else {
-            return false;
+            Cur = TblReader.getCurrentValue();
+            LOG.info("jumped to " + Hex.encodeHexString(jumpkey));
+            return true;
           }
         }
       }
-
+      LOG.info("Reached end of scan, last key was " + Key.toString());
       return false;
     }
   }
