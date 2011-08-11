@@ -31,6 +31,8 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.util.GenericOptionsParser;
 
@@ -49,13 +51,15 @@ public class ExtractData {
   public static final Log LOG = LogFactory.getLog(ExtractData.class.getName());
 
   static void chmodR(FileSystem fs, Path p) throws IOException {
+    FsPermission perm = new FsPermission(FsAction.ALL, FsAction.ALL, FsAction.ALL);
     FileStatus[] list = fs.listStatus(p);
     for (FileStatus f: list) {
       if (f.isDir()) {
         chmodR(fs, f.getPath());
       }
+      fs.setPermission(f.getPath(), perm);
     }
-    fs.setOwner(p, "hbase", "hbase");
+    fs.setPermission(p, perm);
   }
 
   public static int run(String imageID, String friendlyName, String extentsPath, String image, Configuration conf)
