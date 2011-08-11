@@ -29,6 +29,7 @@ import org.apache.hadoop.hbase.client.HTable;
 
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.util.GenericOptionsParser;
@@ -46,6 +47,16 @@ public class ExtractData {
   protected ExtractData() {}
 
   public static final Log LOG = LogFactory.getLog(ExtractData.class.getName());
+
+  static void chmodR(FileSystem fs, Path p) throws IOException {
+    FileStatus[] list = fs.listStatus(p);
+    for (FileStatus f: list) {
+      if (f.isDir()) {
+        chmodR(fs, f.getPath());
+      }
+    }
+    fs.setOwner(p, "hbase", "hbase");
+  }
 
   public static int run(String imageID, String friendlyName, String extentsPath, String image, Configuration conf)
              throws ClassNotFoundException, IOException, InterruptedException {
@@ -93,8 +104,9 @@ public class ExtractData {
       HBaseConfiguration.addHbaseResources(conf);
       loader.setConf(conf);
       LOG.info("Loading hashes into hbase");
+      chmodR(fs, hfileDir);
       loader.doBulkLoad(hfileDir, new HTable(conf, HBaseTables.HASH_TBL_B));
-      result = fs.delete(hfileDir, true);
+//      result = fs.delete(hfileDir, true);
     }
     return result ? 0 : 1;
   }
