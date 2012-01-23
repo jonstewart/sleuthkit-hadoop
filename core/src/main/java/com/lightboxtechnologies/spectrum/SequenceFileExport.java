@@ -48,6 +48,8 @@ import org.apache.commons.codec.binary.Hex;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 
+import org.sleuthkit.hadoop.SKJobFactory;
+
 public class SequenceFileExport {
 
   private static final Log LOG = LogFactory.getLog(SequenceFileExport.class);
@@ -132,8 +134,8 @@ public class SequenceFileExport {
 
   protected static void die() {
     System.err.println(
-      "Usage: SequenceFileExport <image_id> <outpath> <ext> [<ext>]...\n" +
-      "       SequenceFileExport -f <ext_file> <image_id> <outpath>"
+      "Usage: SequenceFileExport <image_id> <friendlyname> <outpath> <ext> [<ext>]...\n" +
+      "       SequenceFileExport -f <ext_file> <image_id> <friendlyname> <outpath>"
     );
     System.exit(2);
   }
@@ -146,6 +148,7 @@ public class SequenceFileExport {
 
     String imageID;
     String outpath;
+    String friendlyname;
     final Set<String> exts = new HashSet<String>();
 
     if ("-f".equals(otherArgs[0])) {
@@ -192,7 +195,8 @@ public class SequenceFileExport {
       }
 
       imageID = otherArgs[2];
-      outpath = otherArgs[3];
+      friendlyname = otherArgs[3];
+      outpath = otherArgs[4];
     }
     else {
       if (otherArgs.length < 3) {
@@ -201,7 +205,8 @@ public class SequenceFileExport {
 
       // read extensions from trailing args
       imageID = otherArgs[0];
-      outpath = otherArgs[1];
+      friendlyname = otherArgs[1];
+      outpath = otherArgs[2];
 
       // lowercase all file extensions
       for (int i = 2; i < otherArgs.length; ++i) {
@@ -211,7 +216,7 @@ public class SequenceFileExport {
 
     conf.setStrings("extensions", exts.toArray(new String[exts.size()]));
 
-    final Job job = new Job(conf, "SequenceFileExport");
+    final Job job = SKJobFactory.createJobFromConf(imageID, friendlyname, "SequenceFileExport", conf);
     job.setJarByClass(SequenceFileExport.class);
     job.setMapperClass(SequenceFileExportMapper.class);
     job.setNumReduceTasks(0);

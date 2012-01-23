@@ -16,7 +16,7 @@
 
 package com.lightboxtechnologies.nsrl;
 
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * An NSRL operating system record.

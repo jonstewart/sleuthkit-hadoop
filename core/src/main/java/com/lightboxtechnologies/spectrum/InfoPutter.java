@@ -86,7 +86,9 @@ public class InfoPutter {
       }
     }
     finally {
-      imgTable.close();
+      if (imgTable != null) {
+        imgTable.close();
+      }
     }
   }
 }

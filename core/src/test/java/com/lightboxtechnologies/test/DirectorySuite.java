@@ -87,7 +87,7 @@ public abstract class DirectorySuite extends Suite {
             // strip off test root and ".java"
             cpath = cpath.substring(path.length()+1, cpath.length()-5);
 
-            // take only classes which have @Test-annotated methods
+            // take only classes which have Test-annotated methods
             final Class<?> c = loadClassByPath(cpath);
             if (hasTests(c)) {
               tests.add(c);

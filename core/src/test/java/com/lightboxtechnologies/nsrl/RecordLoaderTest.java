@@ -92,7 +92,7 @@ public class RecordLoaderTest {
   @Test
   public void loadFilename() throws IOException {
     final LineHandler lh = buildLineHandler(limit, line);
-    final String filename = "src/test/java/com/lightboxtechnologies/nsrl/jackdaws";
+    final String filename = "core/src/test/java/com/lightboxtechnologies/nsrl/jackdaws";
 
     final RecordLoader loader = new RecordLoader();
     loader.load(filename, lh);
