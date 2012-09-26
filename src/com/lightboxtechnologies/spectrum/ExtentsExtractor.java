@@ -25,9 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 
-import org.sleuthkit.hadoop.SKJobFactory;
-import org.sleuthkit.hadoop.SKMapper;
-
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Job;
@@ -36,6 +33,9 @@ import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.sleuthkit.hadoop.core.SKJobFactory;
+import org.sleuthkit.hadoop.core.SKMapper;
 
 public class ExtentsExtractor {
 

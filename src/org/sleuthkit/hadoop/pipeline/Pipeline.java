@@ -18,13 +18,13 @@
 
 package org.sleuthkit.hadoop.pipeline;
 
-import org.sleuthkit.hadoop.ClusterDocumentsJob;
-import org.sleuthkit.hadoop.FSEntryTikaTextExtractor;
-import org.sleuthkit.hadoop.GrepReportGenerator;
-import org.sleuthkit.hadoop.GrepSearchJob;
-import org.sleuthkit.hadoop.SequenceFsEntryText;
-import org.sleuthkit.hadoop.TokenizeAndVectorizeDocuments;
+import org.sleuthkit.hadoop.clustering.ClusterDocumentsJob;
+import org.sleuthkit.hadoop.clustering.SequenceFsEntryText;
+import org.sleuthkit.hadoop.clustering.TokenizeAndVectorizeDocuments;
+import org.sleuthkit.hadoop.match.GrepReportGenerator;
+import org.sleuthkit.hadoop.match.GrepSearchJob;
 import org.sleuthkit.hadoop.scoring.CrossImageScorerJob;
+import org.sleuthkit.hadoop.textextraction.FSEntryTikaTextExtractor;
 
 import com.lightboxtechnologies.spectrum.HBaseTables;
 import com.lightboxtechnologies.spectrum.HDFSArchiver;

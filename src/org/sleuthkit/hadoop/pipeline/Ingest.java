@@ -17,7 +17,9 @@
 
 package org.sleuthkit.hadoop.pipeline;
 
-import com.lightboxtechnologies.spectrum.*;
+import com.lightboxtechnologies.spectrum.ExtractData;
+import com.lightboxtechnologies.spectrum.ExtentsExtractor;
+import com.lightboxtechnologies.spectrum.JsonImport;
 
 public class Ingest {
   public static void main(String[] argv) throws Exception {

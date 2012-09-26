@@ -32,8 +32,8 @@ import org.apache.hadoop.util.GenericOptionsParser;
 
 import org.apache.hadoop.hbase.HBaseConfiguration;
 
-import org.sleuthkit.hadoop.SKMapper;
-import org.sleuthkit.hadoop.SKJobFactory;
+import org.sleuthkit.hadoop.core.SKMapper;
+import org.sleuthkit.hadoop.core.SKJobFactory;
 
 public class JsonImport {
 
