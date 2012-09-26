@@ -13,7 +13,7 @@
    limitations under the License.
  */
 
-package org.sleuthkit.hadoop;
+package org.sleuthkit.hadoop.clustering;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,8 +36,8 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
-import org.apache.mahout.common.iterator.FileLineIterator;
 import org.apache.mahout.common.Pair;
+import org.apache.mahout.common.iterator.FileLineIterator;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.map.OpenObjectIntHashMap;
 

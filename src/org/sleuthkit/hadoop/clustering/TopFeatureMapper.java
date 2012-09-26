@@ -14,7 +14,7 @@
    limitations under the License.
  */
 
-package org.sleuthkit.hadoop;
+package org.sleuthkit.hadoop.clustering;
 
 import java.io.IOException;
 

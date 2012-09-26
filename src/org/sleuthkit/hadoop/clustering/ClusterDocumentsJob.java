@@ -14,7 +14,7 @@
    limitations under the License.
  */
 
-package org.sleuthkit.hadoop;
+package org.sleuthkit.hadoop.clustering;
 
 import java.io.IOException;
 
@@ -33,6 +33,9 @@ import org.apache.mahout.clustering.kmeans.KMeansDriver;
 import org.apache.mahout.common.distance.CosineDistanceMeasure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.sleuthkit.hadoop.core.JobNames;
+import org.sleuthkit.hadoop.core.SKJobFactory;
 
 /** Contains routines for clustering hard drive document data which has been
  *  previously tokenized and vectorized.

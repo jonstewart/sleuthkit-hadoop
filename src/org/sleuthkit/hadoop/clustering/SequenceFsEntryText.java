@@ -14,7 +14,7 @@
    limitations under the License.
  */
 
-package org.sleuthkit.hadoop;
+package org.sleuthkit.hadoop.clustering;
 
 import java.io.IOException;
 
@@ -27,6 +27,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.lightboxtechnologies.spectrum.FsEntryHBaseInputFormat;
+
+import org.sleuthkit.hadoop.core.HBaseConstants;
+import org.sleuthkit.hadoop.core.JobNames;
+import org.sleuthkit.hadoop.core.SKJobFactory;
 
 /** Contains methods which will output file data to sequence files for use
  *  with mahout. Only outputs file data for files which also have grep search

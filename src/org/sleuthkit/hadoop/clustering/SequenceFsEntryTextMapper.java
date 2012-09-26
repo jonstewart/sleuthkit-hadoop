@@ -14,7 +14,7 @@
    limitations under the License.
  */
 
-package org.sleuthkit.hadoop;
+package org.sleuthkit.hadoop.clustering;
 
 import java.io.IOException;
 import java.util.List;
@@ -25,6 +25,9 @@ import org.slf4j.LoggerFactory;
 
 import com.lightboxtechnologies.spectrum.FsEntry;
 import com.lightboxtechnologies.spectrum.ImmutableHexWritable;
+
+import org.sleuthkit.hadoop.core.HBaseConstants;
+import org.sleuthkit.hadoop.core.SKMapper;
 
 /** A mapper which will write out files from the HBase table
  *  to a sequence file IFF

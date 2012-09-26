@@ -14,7 +14,7 @@
    limitations under the License.
  */
 
-package org.sleuthkit.hadoop;
+package org.sleuthkit.hadoop.clustering;
 
 import java.io.IOException;
 
@@ -26,6 +26,8 @@ import org.apache.mahout.vectorizer.DocumentProcessor;
 import org.apache.mahout.vectorizer.tfidf.TFIDFConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.sleuthkit.hadoop.core.SKJobFactory;
 
 /** Contains methods allowing one to
  *  tokenize and then vectorize documents previously exported to
