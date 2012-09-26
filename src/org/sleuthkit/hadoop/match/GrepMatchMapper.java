@@ -14,7 +14,7 @@
    limitations under the License.
  */
 
-package org.sleuthkit.hadoop;
+package org.sleuthkit.hadoop.match;
 
 import java.io.IOException;
 import java.util.List;
@@ -28,6 +28,9 @@ import org.slf4j.LoggerFactory;
 
 import com.lightboxtechnologies.spectrum.FsEntry;
 import com.lightboxtechnologies.spectrum.ImmutableHexWritable;
+
+import org.sleuthkit.hadoop.core.HBaseConstants;
+import org.sleuthkit.hadoop.core.SKMapper;
 
 /** Inspects FsEntry objects for the given image for grep results,
  * and generates JSON data for those results, which are emitted as

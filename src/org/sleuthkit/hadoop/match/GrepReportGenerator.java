@@ -15,7 +15,7 @@
 */
 
 
-package org.sleuthkit.hadoop;
+package org.sleuthkit.hadoop.match;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -30,6 +30,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.lightboxtechnologies.spectrum.FsEntryHBaseInputFormat;
+
+import org.sleuthkit.hadoop.core.JobNames;
+import org.sleuthkit.hadoop.core.SKJobFactory;
 
 /** Contains methods to generate reports based on the output of the grep
   * search engine.

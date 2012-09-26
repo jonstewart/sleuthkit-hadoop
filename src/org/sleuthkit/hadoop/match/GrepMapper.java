@@ -15,7 +15,7 @@
 */
 
 
-package org.sleuthkit.hadoop;
+package org.sleuthkit.hadoop.match;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,6 +29,9 @@ import org.slf4j.LoggerFactory;
 
 import com.lightboxtechnologies.spectrum.FsEntry;
 import com.lightboxtechnologies.spectrum.ImmutableHexWritable;
+
+import org.sleuthkit.hadoop.core.HBaseConstants;
+import org.sleuthkit.hadoop.core.SKMapper;
 
 /** Searches the file text in a given hard drive for the regexes
  * provided by mapred.mapper.regex. Outputs the data back into FsEntry,

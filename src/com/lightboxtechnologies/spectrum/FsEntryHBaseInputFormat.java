@@ -55,7 +55,7 @@ import java.io.DataOutputStream;
 
 import com.lightboxtechnologies.io.IOUtils;
 
-import org.sleuthkit.hadoop.SKMapper;
+import org.sleuthkit.hadoop.core.SKMapper;
 
 public class FsEntryHBaseInputFormat extends InputFormat implements Configurable {
 

@@ -14,7 +14,7 @@
    limitations under the License.
 */
 
-package org.sleuthkit.hadoop;
+package org.sleuthkit.hadoop.match;
 
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -26,6 +26,9 @@ import org.apache.hadoop.util.ToolRunner;
 import com.lightboxtechnologies.spectrum.FsEntry;
 import com.lightboxtechnologies.spectrum.FsEntryHBaseInputFormat;
 import com.lightboxtechnologies.spectrum.FsEntryHBaseOutputFormat;
+
+import org.sleuthkit.hadoop.core.JobNames;
+import org.sleuthkit.hadoop.core.SKJobFactory;
 
 /** Extracts matching regexes from FsEntry instances generated from
  * the file table for a given image. The data is placed back into the
