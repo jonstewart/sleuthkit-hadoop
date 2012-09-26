@@ -14,7 +14,7 @@
    limitations under the License.
  */
 
-package org.sleuthkit.hadoop;
+package org.sleuthkit.hadoop.core;
 
 import java.io.IOException;
 
@@ -33,9 +33,8 @@ import org.apache.commons.logging.LogFactory;
  * 
  */
 public class SKJobFactory {
-
   private static final Log LOG = LogFactory.getLog(SKJobFactory.class);
-    
+
   public static void addDependencies(Configuration conf) throws IOException {
     FileSystem fs = FileSystem.get(conf);
     FileStatus[] jars = fs.globStatus(new Path("/texaspete/lib/*.jar"));
@@ -67,7 +66,7 @@ public class SKJobFactory {
     addDependencies(j.getConfiguration());
     return j;
   }
-  
+
   public static Job createJob(String imageID, String friendlyName, String step) throws IOException {
     return createJobFromConf(imageID, friendlyName, step, null);
   }

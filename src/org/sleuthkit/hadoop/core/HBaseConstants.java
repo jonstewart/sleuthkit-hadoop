@@ -14,7 +14,7 @@
    limitations under the License.
  */
 
-package org.sleuthkit.hadoop;
+package org.sleuthkit.hadoop.core;
 
 /** Contains constants which are used 
  *  as keys in FsEntry. These static strings provide a way to get
@@ -22,12 +22,12 @@ package org.sleuthkit.hadoop;
  *  extracted by tika, one would call FsEntry.get("sleuthkit.text).
  */
 public class HBaseConstants {
-    /** The text extracted through tika. This is a string. */
-    public static final String EXTRACTED_TEXT = "sleuthkit.text";
-    /** The text that has been matched by a regex. This is a JSONArray.
-     * (ArrayList, via Jackson) */
-    public static final String GREP_RESULTS = "sleuthkit.grep.results";
-    /** The actual regex that was matched to a corresponding grep result.
-     * This is a JSONArray (Arraylist, via Jackson). */
-    public static final String GREP_SEARCHES = "sleuthkit.grep.regexes";
+  /** The text extracted through tika. This is a string. */
+  public static final String EXTRACTED_TEXT = "sleuthkit.text";
+  /** The text that has been matched by a regex. This is a JSONArray.
+   * (ArrayList, via Jackson) */
+  public static final String GREP_RESULTS = "sleuthkit.grep.results";
+  /** The actual regex that was matched to a corresponding grep result.
+   * This is a JSONArray (Arraylist, via Jackson). */
+  public static final String GREP_SEARCHES = "sleuthkit.grep.regexes";
 }
