@@ -37,11 +37,12 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
-import org.sleuthkit.hadoop.JobNames;
-import org.sleuthkit.hadoop.SKJobFactory;
-import org.sleuthkit.hadoop.SKMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.sleuthkit.hadoop.core.JobNames;
+import org.sleuthkit.hadoop.core.SKJobFactory;
+import org.sleuthkit.hadoop.core.SKMapper;
 
 /** Performs a cross image scoring task to quantify similarity between one
  * drive and others in the system. Based on the number of files which they

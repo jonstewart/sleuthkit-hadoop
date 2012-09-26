@@ -22,7 +22,8 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Writable;
-import org.sleuthkit.hadoop.SKMapper;
+
+import org.sleuthkit.hadoop.core.SKMapper;
 
 /** Calculates the raw score per matched file. Emits the drive id and score
  * for the file (to be added during the reduce step).

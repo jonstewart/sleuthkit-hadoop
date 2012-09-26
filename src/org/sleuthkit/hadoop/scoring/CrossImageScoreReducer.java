@@ -24,7 +24,8 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.sleuthkit.hadoop.SKMapper;
+
+import org.sleuthkit.hadoop.core.SKMapper;
 
 /** Takes in a file hash to image ID mapping, and outputs the mapping
  * for all file hashes associated with the hard drive ID given to the job

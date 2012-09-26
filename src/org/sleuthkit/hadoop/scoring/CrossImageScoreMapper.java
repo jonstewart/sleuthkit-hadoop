@@ -25,7 +25,8 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapreduce.TableMapper;
 import org.apache.hadoop.io.BytesWritable;
-import org.sleuthkit.hadoop.SKMapper;
+
+import org.sleuthkit.hadoop.core.SKMapper;
 
 import com.lightboxtechnologies.spectrum.KeyUtils;
 
