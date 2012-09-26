@@ -14,7 +14,7 @@
    limitations under the License.
 */
 
-package org.sleuthkit.hadoop;
+package org.sleuthkit.hadoop.textextraction;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,6 +29,11 @@ import com.lightboxtechnologies.spectrum.FsEntry;
 import com.lightboxtechnologies.spectrum.ImmutableHexWritable;
 import com.lightboxtechnologies.spectrum.FsEntryHBaseInputFormat;
 import com.lightboxtechnologies.spectrum.FsEntryHBaseOutputFormat;
+
+import org.sleuthkit.hadoop.core.HBaseConstants;
+import org.sleuthkit.hadoop.core.JobNames;
+import org.sleuthkit.hadoop.core.SKJobFactory;
+import org.sleuthkit.hadoop.core.SKMapper;
 
 /** Extracts text from files and emits the result back into
  * the file table. If text cannot be extracted, this method will
