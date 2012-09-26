@@ -1,8 +1,2 @@
-*.dblite
 .*.swp
-clustering/target/
-common/target/
-core/target/
-match/target/
-pipeline/target/
-textextraction/target/
+clases/
