@@ -19,13 +19,15 @@ package com.lightboxtechnologies.ingest;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.util.GenericOptionsParser;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
 
 import org.apache.commons.io.IOUtils;
 
@@ -36,21 +38,17 @@ import com.lightboxtechnologies.spectrum.HBaseTables;
  *
  * @author Joel Uckelman
  */
-public class InfoPutter {
+public class InfoPutter extends Configured implements Tool {
+  public int run(String[] args) throws IOException {
+    final Configuration conf = getConf(); 
 
-  public static void main(String[] args) throws IOException {
-    final Configuration conf = HBaseConfiguration.create();
-
-    final String[] otherArgs =
-      new GenericOptionsParser(conf, args).getRemainingArgs();
-
-    if (otherArgs.length != 2) {
+    if (args.length != 2) {
       System.err.println("Usage: InfoPutter <imageID> <friendly_name>");
-      System.exit(1);
+      return 1;
     }
 
-    final String imageID = otherArgs[0];
-    final String friendlyName = otherArgs[1];
+    final String imageID = args[0];
+    final String friendlyName = args[1];
 
     HTable imgTable = null;
 
@@ -80,11 +78,11 @@ public class InfoPutter {
 
         imgTable.put(put);
 
-        System.exit(0);
+        return 0;
       }
       else {
         // row exists, fail!
-        System.exit(1);
+        return 1;
       }
     }
     finally {
@@ -92,5 +90,11 @@ public class InfoPutter {
         imgTable.close();
       }
     }
+  }
+
+  public static void main(String[] args) throws Exception {
+    System.exit(
+      ToolRunner.run(HBaseConfiguration.create(), new InfoPutter(), args)
+    );
   }
 }
