@@ -35,7 +35,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 
-import org.sleuthkit.hadoop.SKJobFactory;
+import org.sleuthkit.hadoop.core.SKJobFactory;
 
 /**
  * An MR job to load NSRL hash data to HBase.
