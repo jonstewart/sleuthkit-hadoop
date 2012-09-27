@@ -62,8 +62,7 @@ public class ExtractData {
     fs.setPermission(p, perm);
   }
 
-  public static int run(String imageID, String friendlyName, String extentsPath, String image, Configuration conf)
-             throws ClassNotFoundException, IOException, InterruptedException {
+  public static int run(String imageID, String friendlyName, String extentsPath, String image, Configuration conf) throws Exception {
     if (conf == null) {
       conf = HBaseConfiguration.create();
     }
@@ -104,7 +103,7 @@ public class ExtractData {
     // job.getConfiguration().setBoolean("mapreduce.task.profile", true);
     boolean result = job.waitForCompletion(true);
     if (result) {
-      LoadIncrementalHFiles loader = new LoadIncrementalHFiles();
+      LoadIncrementalHFiles loader = new LoadIncrementalHFiles(conf);
       HBaseConfiguration.addHbaseResources(conf);
       loader.setConf(conf);
       LOG.info("Loading hashes into hbase");
@@ -115,8 +114,7 @@ public class ExtractData {
     return result ? 0 : 1;
   }
 
-  public static void main(String[] args)
-              throws ClassNotFoundException, IOException, InterruptedException {
+  public static void main(String[] args) throws Exception {
     final Configuration conf = HBaseConfiguration.create();
     final String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
 
