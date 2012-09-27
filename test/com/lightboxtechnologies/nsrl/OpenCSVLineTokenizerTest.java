@@ -21,7 +21,7 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * @author Joel Uckelman

@@ -44,7 +44,7 @@ public class OSRecordProcessorTest {
 
     final OSData osd = new OSData(code, name, version, mfg_code);
 
-    final RecordProcessor proc = new OSRecordProcessor();
+    final RecordProcessor<OSData> proc = new OSRecordProcessor();
     assertEquals(osd, proc.process(
       new String[] { osd.code, osd.name, osd.version, osd.mfg_code }
     ));
