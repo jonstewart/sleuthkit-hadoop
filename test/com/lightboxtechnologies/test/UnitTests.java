@@ -14,12 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.lightboxtechnologies.spectrum;
+package com.lightboxtechnologies.test;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.model.InitializationError;
-
-import com.lightboxtechnologies.test.DirectorySuite;
 
 @RunWith(UnitTests.AllSuite.class)
 public class UnitTests {
