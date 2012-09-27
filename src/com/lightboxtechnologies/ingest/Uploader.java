@@ -14,9 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.lightboxtechnologies.spectrum;
-
-import com.lightboxtechnologies.io.*;
+package com.lightboxtechnologies.ingest;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.util.GenericOptionsParser;
@@ -33,6 +31,9 @@ import java.io.*;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
+import com.lightboxtechnologies.io.IOUtils;
+import com.lightboxtechnologies.spectrum.FsEntryUtils;
 
 public class Uploader {
   public static void main(String[] args) throws Exception {

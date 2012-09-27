@@ -31,7 +31,7 @@ public class FsEntryUtils {
 
   MessageDigest Hasher;
 
-  static MessageDigest getHashInstance(final String alg) {
+  public static MessageDigest getHashInstance(final String alg) {
     MessageDigest hash;
     try {
       hash = MessageDigest.getInstance(alg);

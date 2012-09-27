@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.lightboxtechnologies.spectrum;
+package com.lightboxtechnologies.ingest;
 
 import java.io.IOException;
 
@@ -28,6 +28,8 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.util.GenericOptionsParser;
 
 import org.apache.commons.io.IOUtils;
+
+import com.lightboxtechnologies.spectrum.HBaseTables;
 
 /**
  * Stuff fsrip info output into the images table in HBase.
