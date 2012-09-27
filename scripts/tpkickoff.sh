@@ -45,11 +45,12 @@ FSRIP=/home/uckelman/projects/lightbox/fsrip/build/src/fsrip
 
 HADOOP=/usr/bin/hadoop
 
-JarFile=`ls -r $JarDir/sleuthkit-pipeline-r*-job.jar | head -n 1`
-if [ $? -ne 0 ]; then
-  echo "failed to find pipeline JAR"
-  exit 1
-fi
+#JarFile=`ls -r $JarDir/sleuthkit-pipeline-r*-job.jar | head -n 1`
+#if [ $? -ne 0 ]; then
+#  echo "failed to find pipeline JAR"
+#  exit 1
+#fi
+JarFile=lib/tp.jar
 
 JsonFile=$FriendlyName.json
 HdfsImage=$FriendlyName.dd
@@ -57,7 +58,7 @@ HdfsImage=$FriendlyName.dd
 echo "jar file is ${JarFile}"
 
 # rip filesystem metadata, upload to hdfs
-$FSRIP dumpfs $ImagePath | $HADOOP jar $JarFile com.lightboxtechnologies.spectrum.Uploader $JsonFile
+$FSRIP dumpfs $ImagePath | $HADOOP jar $JarFile com.lightboxtechnologies.ingest.Uploader $JsonFile
 if [ $? -ne 0 ]; then
   echo "image metadata upload failed"
   exit 1
@@ -65,7 +66,7 @@ fi
 echo "done uploading metadata"
 
 # upload image to hdfs
-ImageID=`$FSRIP dumpimg $ImagePath | $HADOOP jar $JarFile com.lightboxtechnologies.spectrum.Uploader $HdfsImage`
+ImageID=`$FSRIP dumpimg $ImagePath | $HADOOP jar $JarFile com.lightboxtechnologies.ingest.Uploader $HdfsImage`
 if [ $? -ne 0 ]; then
   echo "image upload failed"
   exit 1
@@ -78,7 +79,7 @@ fi
 echo "Image ID is ${ImageID}"
 
 # rip image info, insert in hbase
-$FSRIP info $ImagePath | $HADOOP jar $JarFile com.lightboxtechnologies.spectrum.InfoPutter $ImageID $FriendlyName
+$FSRIP info $ImagePath | HADOOP_CLASSPATH=$HADOOP_CLASSPATH:/usr/lib/hbase/hbase.jar $HADOOP jar $JarFile com.lightboxtechnologies.ingest.InfoPutter $ImageID $FriendlyName
 if [ $? -ne 0 ]; then
   echo "image info registration failed"
   exit 1
@@ -86,7 +87,7 @@ fi
 echo "image info registered"
 
 # kick off ingest
-$HADOOP jar $JarFile org.sleuthkit.hadoop.pipeline.Ingest $ImageID $HdfsImage $JsonFile $FriendlyName
+HADOOP_CLASSPATH=$HADOOP_CLASSPATH:/usr/lib/hbase/hbase.jar $HADOOP jar $JarFile org.sleuthkit.hadoop.pipeline.Ingest $ImageID $HdfsImage $JsonFile $FriendlyName
 if [ $? -ne 0 ]; then
   echo "ingest failed"
   exit 1
