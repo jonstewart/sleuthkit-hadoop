@@ -70,7 +70,7 @@ public class ExtractMapper
     BYTES
   }
 
-  private static final int SIZE_THRESHOLD = 10 * 1024 * 1024;
+  private static final int SIZE_THRESHOLD = 1024 * 1024;
 
   private final ImmutableBytesWritable OutKey = new ImmutableBytesWritable();
   private SequenceFile.Reader Extents = null;
