@@ -17,29 +17,53 @@
 
 package org.sleuthkit.hadoop.pipeline;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
+
 import com.lightboxtechnologies.spectrum.ExtractData;
 import com.lightboxtechnologies.spectrum.ExtentsExtractor;
 import com.lightboxtechnologies.spectrum.JsonImport;
 
-public class Ingest {
-  public static void main(String[] argv) throws Exception {
-    if (argv.length != 4) {
+public class Ingest extends Configured implements Tool {
+  public int run(String[] args) throws Exception {
+    if (args.length != 4) {
       System.err.println("Usage: Ingest <image_hash_id> <image.dd> <image.json> <friendlyName>");
-      System.exit(2);
+      return 2;
     }
-    final String imgID = argv[0];
-    final String image = argv[1];
-    final String jsonImg = argv[2];
-    final String friendlyName = argv[3];
-    final String extents = "/texaspete/data/" + imgID + "/extents";
-    if (0 == new JsonImport().run(new String[]{ jsonImg, imgID, friendlyName })
-      && 0 == new ExtentsExtractor().run(new String[]{ imgID, friendlyName, extents })
-      && 0 == ExtractData.run(imgID, friendlyName, extents + "/part-r-00000", image, null))
-    {
-      System.exit(0);
-    }
-    else {
-      System.exit(1);
-    }
+
+    final String imgID = args[0];
+    final String image = args[1];
+    final String jsonImg = args[2];
+    final String friendlyName = args[3];
+    final String extents = "/texaspete/data/" + imgID + "/extents";   
+
+    return 
+        ToolRunner.run(
+          HBaseConfiguration.create(),
+          new JsonImport(),
+          new String[]{ jsonImg, imgID, friendlyName }
+        ) == 0
+      &&
+        ToolRunner.run(
+          new Configuration(),
+          new ExtentsExtractor(),
+          new String[]{ imgID, friendlyName, extents }
+        ) == 0
+      &&
+        ToolRunner.run(
+          HBaseConfiguration.create(),
+          new ExtractData(),
+          new String[]{ imgID, friendlyName, extents + "/part-r-00000", image }
+        ) == 0
+      ? 0 : 1;
+  }
+
+  public static void main(String[] args) throws Exception {
+    System.exit(
+      ToolRunner.run(new Configuration(), new Ingest(), args)
+    );
   }
 }
