@@ -94,20 +94,20 @@ if [ $? -ne 0 ]; then
 fi
 echo "done with ingest"
 
-# copy reports template
-$HADOOP fs -cp /texaspete/templates/reports /texaspete/data/$ImageID/
-if [ $? -ne 0 ]; then
-  echo "copying reports template failed"
-  exit 1
-fi
-echo "reports template copied"
-
-# kick off pipeline
-$HADOOP jar $JarFile org.sleuthkit.hadoop.pipeline.Pipeline $ImageID $FriendlyName
-if [ $? -ne 0 ]; then
-  echo "pipeline failed"
-  exit 1
-fi
-echo "pipeline completed"
+## copy reports template
+#$HADOOP fs -cp /texaspete/templates/reports /texaspete/data/$ImageID/
+#if [ $? -ne 0 ]; then
+#  echo "copying reports template failed"
+#  exit 1
+#fi
+#echo "reports template copied"
+#
+## kick off pipeline
+#$HADOOP jar $JarFile org.sleuthkit.hadoop.pipeline.Pipeline $ImageID $FriendlyName
+#if [ $? -ne 0 ]; then
+#  echo "pipeline failed"
+#  exit 1
+#fi
+#echo "pipeline completed"
 
 date
