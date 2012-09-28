@@ -40,12 +40,12 @@ import com.lightboxtechnologies.spectrum.HBaseTables;
  */
 public class InfoPutter extends Configured implements Tool {
   public int run(String[] args) throws IOException {
-    final Configuration conf = getConf(); 
-
     if (args.length != 2) {
       System.err.println("Usage: InfoPutter <imageID> <friendly_name>");
       return 1;
     }
+
+    final Configuration conf = getConf();
 
     final String imageID = args[0];
     final String friendlyName = args[1];
