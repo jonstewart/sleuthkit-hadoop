@@ -16,47 +16,61 @@
 
 package org.sleuthkit.hadoop.match;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 
-/** Sums the numbmer of times a given item has been found through grep searching.
- * Outputs that data to a JSON array. This is then packaged into an output report.
+import org.codehaus.jackson.JsonEncoding;
+import org.codehaus.jackson.JsonFactory;
+import org.codehaus.jackson.JsonGenerator;
+
+/**
+ * Sums the numbmer of times a given item has been found through grep
+ * searching. Outputs that data to a JSON array. This is then packaged
+ * into an output report.
  */
 public class GrepCountReducer extends Reducer<LongWritable, LongWritable, NullWritable, Text> {
-  JSONArray outArray = new JSONArray();
   String regexes[];
 
+  final ByteArrayOutputStream buf = new ByteArrayOutputStream();
+  JsonGenerator gen;
+
   @Override
-  protected void setup(Context context) {
+  protected void setup(Context context) throws IOException {
     // TODO: We could make sure that we only have one instance of this
     // here, since that's all I'm supporting at the moment.
     regexes = context.getConfiguration().get("mapred.mapper.regex").split("\n");
+
+    gen = new JsonFactory().createJsonGenerator(buf, JsonEncoding.UTF8);
+    gen.writeStartArray();
   }
 
   @SuppressWarnings("unchecked")
   @Override 
-  protected void reduce(LongWritable key, Iterable<LongWritable> values, Context context) {
-    JSONObject obj = new JSONObject();
+  protected void reduce(LongWritable key, Iterable<LongWritable> values, Context context) throws IOException {
+    gen.writeStartObject();
+
     int sum = 0;
     for (LongWritable value : values) {
       sum += value.get();
     }
-    obj.put("a", key.get());
-    obj.put("n", sum);
-    obj.put("kw", regexes[(int) key.get()]);
+  
+    gen.writeNumberField("a", key.get());
+    gen.writeNumberField("n", sum);
+    gen.writeStringField("kw", regexes[(int) key.get()]);
 
-    outArray.add(obj);
+    gen.writeEndObject();
   }
 
   @Override
   protected void cleanup(Context context)
                                    throws IOException, InterruptedException {
-    context.write(NullWritable.get(), new Text(outArray.toJSONString()));
+    gen.writeEndArray();
+    gen.close();
+    context.write(NullWritable.get(), new Text(buf.toString("UTF-8")));
   }
 }
