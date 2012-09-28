@@ -17,22 +17,37 @@ limitations under the License.
 */
 package com.lightboxtechnologies.spectrum;
 
+import java.io.IOException;
+
+import org.apache.commons.codec.DecoderException;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
 
 import org.sleuthkit.hadoop.core.SKJobFactory;
 
-public class ExtentsExtractor {
-  public static void reportUsageAndExit() {
-    System.err.println("Usage: ExtentsExtractor <imageID> <friendlyName> <sequenceFileNameHDFS>");
-    System.exit(-1);
-  }
+public class ExtentsExtractor extends Configured implements Tool {
+  public int run(String[] args) throws ClassNotFoundException, DecoderException, InterruptedException, IOException {
+    if (args.length != 3) {
+      System.err.println("Usage: ExtentsExtractor <imageID> <friendlyName> <sequenceFileNameHDFS>");
+      return 1;
+    }
 
-  public static int run(String imageID, String friendlyName, String outDir) throws Exception {
-    final Job job = SKJobFactory.createJob(imageID, friendlyName, "ExtentsExtractor");
+    final String imageID = args[0];
+    final String friendlyName = args[1];
+    final String outDir = args[2];
+
+    final Configuration conf = getConf();
+    final Job job = SKJobFactory.createJobFromConf(
+      imageID, friendlyName, "ExtentsExtractor", conf
+    );
     
     job.setJarByClass(ExtentsExtractor.class);
     job.setMapperClass(ExtentsExtractorMapper.class);
@@ -48,11 +63,12 @@ public class ExtentsExtractor {
     FsEntryHBaseInputFormat.setupJob(job, imageID);
 
     System.out.println("Spinning off ExtentsExtractor Job...");
-    job.waitForCompletion(true);
-    return 0;
+    return job.waitForCompletion(true) ? 0 : 1;
   }
 
-  public static void main (String[] argv) throws Exception {
-    run(argv[0], argv[1], argv[2]);
+  public static void main (String[] args) throws Exception {
+    System.exit(
+      ToolRunner.run(new Configuration(), new ExtentsExtractor(), args)
+    );
   }
 }
