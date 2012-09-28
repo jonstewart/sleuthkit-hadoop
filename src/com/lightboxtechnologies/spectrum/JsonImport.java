@@ -19,22 +19,29 @@ package com.lightboxtechnologies.spectrum;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.util.GenericOptionsParser;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
 
-import org.apache.hadoop.hbase.HBaseConfiguration;
-
-import org.sleuthkit.hadoop.core.SKMapper;
 import org.sleuthkit.hadoop.core.SKJobFactory;
 
-public class JsonImport {
-  public static int run(String jsonPath, String imageHash, String friendlyName, Configuration conf) throws Exception {
-    if (conf == null) {
-      conf = HBaseConfiguration.create();
+public class JsonImport extends Configured implements Tool {
+  public int run(String[] args) throws ClassNotFoundException, InterruptedException, IOException {
+    if (args.length != 3) {
+      System.err.println("Usage: JsonImport <in> <image_hash> <friendly_name>");
+      return 1;
     }
+
+    final String jsonPath = args[0];
+    final String imageHash = args[1];
+    final String friendlyName = args[2];
+
+    final Configuration conf = getConf();
     conf.set(HBaseTables.ENTRIES_TBL_VAR, HBaseTables.ENTRIES_TBL);
 
     final Job job = SKJobFactory.createJobFromConf(imageHash, friendlyName, "JsonImport", conf);
@@ -48,13 +55,8 @@ public class JsonImport {
   }
 
   public static void main(String[] args) throws Exception {
-    final Configuration conf = HBaseConfiguration.create();
-    final String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
-
-    if (otherArgs.length != 3) {
-      System.err.println("Usage: JsonImport <in> <image_hash> <friendly_name>");
-      System.exit(2);
-    }
-    System.exit(run(args[0], args[1], args[2], conf));
+    System.exit(
+      ToolRunner.run(HBaseConfiguration.create(), new JsonImport(), args)
+    );
   }
 }

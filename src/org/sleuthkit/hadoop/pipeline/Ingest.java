@@ -32,8 +32,8 @@ public class Ingest {
     final String jsonImg = argv[2];
     final String friendlyName = argv[3];
     final String extents = "/texaspete/data/" + imgID + "/extents";
-    if (0 == JsonImport.run(jsonImg, imgID, friendlyName, null)
-      && 0 == new ExtentsExtractor().run(new String[]{ imgID, friendlyName, extents})
+    if (0 == new JsonImport().run(new String[]{ jsonImg, imgID, friendlyName })
+      && 0 == new ExtentsExtractor().run(new String[]{ imgID, friendlyName, extents })
       && 0 == ExtractData.run(imgID, friendlyName, extents + "/part-r-00000", image, null))
     {
       System.exit(0);
