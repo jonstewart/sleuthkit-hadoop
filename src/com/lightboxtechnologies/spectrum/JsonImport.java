@@ -37,11 +37,8 @@ import org.sleuthkit.hadoop.core.SKJobFactory;
 
 public class JsonImport {
 
-/**
- * This is some documentation for FsEntryMapLoader
- */
   public static class FsEntryMapLoader
-       extends SKMapper<Object, Text, ImmutableBytesWritable, FsEntry>{
+               extends SKMapper<Object, Text, ImmutableBytesWritable, FsEntry>{
 
     private final FsEntry Entry = new FsEntry();
     private final ImmutableBytesWritable Id =
