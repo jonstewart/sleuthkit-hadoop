@@ -352,7 +352,7 @@ public class ExtractMapper
 
     // write the entry to the file table
     EntryTbl.put(
-      FsEntryHBaseOutputFormat.FsEntryHBaseWriter.createPut(
+      FsEntryHBaseWriter.createPut(
         id_b, rec, HBaseTables.ENTRIES_COLFAM_B
       )
     );
