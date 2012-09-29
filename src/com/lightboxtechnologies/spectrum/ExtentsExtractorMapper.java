@@ -63,12 +63,14 @@ class ExtentsExtractorMapper
         LOG.info(value.fullPath() + " has no attributes");
         return;
       }
+
       long fsByteOffset = ((Number)value.get("fs_byte_offset")).longValue();
       long fsBlockSize = ((Number)value.get("fs_block_size")).longValue();
       for (Map attribute: attrs) {
-        long flags = ((Number)attribute.get("flags")).longValue();
-        long type = ((Number)attribute.get("type")).longValue();
-        if ((flags & 0x03) > 0 && (type & 0x81) > 0) { // flags & type indicate this attribute has nonresident data
+        final long flags = ((Number)attribute.get("flags")).longValue();
+        final long type = ((Number)attribute.get("type")).longValue();
+        if ((flags & 0x03) > 0 && (type & 0x81) > 0) {
+          // flags & type indicate this attribute has nonresident data
           Object nrds = attribute.get("nrd_runs");
           if (nrds == null) {
             LOG.warn(value.fullPath() + " had an nrd attr with null runs");
