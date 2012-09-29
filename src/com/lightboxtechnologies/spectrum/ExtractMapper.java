@@ -351,11 +351,7 @@ public class ExtractMapper
     final byte[] sha1 = hash_lookup_and_mark(rec, "sha1");
 
     // write the entry to the file table
-    EntryTbl.put(
-      FsEntryHBaseWriter.createPut(
-        id_b, rec, HBaseTables.ENTRIES_COLFAM_B
-      )
-    );
+    EntryTbl.put(FsEntryPut.create(id_b, rec, HBaseTables.ENTRIES_COLFAM_B));
 
     // write the md5 version of the key for the hash table
     OutKey.set(KeyUtils.makeEntryKey(md5, (byte) 0, id_b));
