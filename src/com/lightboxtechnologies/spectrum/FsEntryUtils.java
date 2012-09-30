@@ -26,10 +26,9 @@ import org.apache.hadoop.hbase.util.Bytes;
  * @author Joel Uckelman
  */
 public class FsEntryUtils {
-  
+  protected FsEntryUtils() {} 
+ 
   public static final int ID_LENGTH = 36;
-
-  MessageDigest Hasher;
 
   public static MessageDigest getHashInstance(final String alg) {
     MessageDigest hash;
@@ -40,14 +39,6 @@ public class FsEntryUtils {
       throw new RuntimeException("As if " + alg + " isn't going to be implemented, bloody Java tossers");
     }
     return hash;
-  }
-
-  FsEntryUtils() {
-    Hasher = getHashInstance("MD5");
-  }
-
-  public void calcFsEntryID(byte[] result, byte[] imgID, String path, int dirIndex) {
-    makeFsEntryKey(result, imgID, path.getBytes(), dirIndex, Hasher);
   }
 
   public static byte[] makeFsEntryKey(byte[] imgID, byte[] path, int dirIndex) {
