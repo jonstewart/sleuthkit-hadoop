@@ -28,6 +28,7 @@ test: compile $(TEST_SOURCES) | $(CLASSDIR)/test
 
 jar: compile test
 	$(JAR) cf $(CLASSDIR)/tp.jar -C $(CLASSDIR)/src .
+	cp $(CLASSDIR)/tp.jar lib
 
 $(CLASSDIR) $(CLASSDIR)/src $(CLASSDIR)/test:
 	$(MKDIR) -p $@
