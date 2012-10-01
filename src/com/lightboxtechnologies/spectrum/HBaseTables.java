@@ -23,6 +23,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableExistsException;
+import org.apache.hadoop.hbase.TableNotDisabledException;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.io.hfile.Compression;
@@ -61,25 +62,29 @@ public class HBaseTables {
   public static HTable summon(Configuration conf, byte[] tname, byte[] cfam)
                                                            throws IOException {
     final HBaseAdmin admin = new HBaseAdmin(conf);
-    if (!admin.tableExists(tname)) {
-      final HTableDescriptor tableDesc = new HTableDescriptor(tname);
-      if (!tableDesc.hasFamily(cfam)) {
-        final HColumnDescriptor colFamDesc = new HColumnDescriptor(cfam);
-        colFamDesc.setCompressionType(Compression.Algorithm.GZ);
-        tableDesc.addFamily(colFamDesc);
-      }
 
-      try {
-        admin.createTable(tableDesc);
-      }
-      catch (TableExistsException e) {
-        LOG.info("Tried to create the hash table, but it already exists. Probably just lost a race condition.");
-      }
+    final HTableDescriptor tableDesc = new HTableDescriptor(tname);
+    if (!tableDesc.hasFamily(cfam)) {
+      final HColumnDescriptor colFamDesc = new HColumnDescriptor(cfam);
+      colFamDesc.setCompressionType(Compression.Algorithm.GZ);
+      tableDesc.addFamily(colFamDesc);
     }
-    else if (!admin.isTableEnabled(tname)) {
+
+    try {
+      admin.createTable(tableDesc);
+    }
+    catch (TableExistsException e) {
+      // table already exists, this is ok
+    }
+
+    try {
     	admin.enableTable(tname);
     }
+    catch (TableNotDisabledException e) {
+      // table already enabled, this is ok
+    }
 
+// FIXME: check what happens if we do this when the table doesn't exist
     return new HTable(conf, tname);
   }
 }

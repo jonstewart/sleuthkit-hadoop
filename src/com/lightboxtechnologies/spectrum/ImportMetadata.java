@@ -30,7 +30,6 @@ public class ImportMetadata extends Configured implements Tool {
     final String outDir = args[3];
 
     final Configuration conf = getConf();
-    conf.set(HBaseTables.ENTRIES_TBL_VAR, HBaseTables.ENTRIES_TBL);
 
     final Job job = SKJobFactory.createJobFromConf(
       imageID, friendlyName, "ImportMetadata", conf
@@ -45,6 +44,10 @@ public class ImportMetadata extends Configured implements Tool {
 
     FileInputFormat.addInputPath(job, new Path(jsonPath));
     SequenceFileOutputFormat.setOutputPath(job, new Path(outDir));
+
+    HBaseTables.summon(
+      conf, HBaseTables.ENTRIES_TBL_B, HBaseTables.ENTRIES_COLFAM_B
+    );
 
     System.out.println("Spinning off ImportMetadata Job...");
     return job.waitForCompletion(true) ? 0 : 1;

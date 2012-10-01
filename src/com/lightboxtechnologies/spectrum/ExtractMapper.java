@@ -106,12 +106,8 @@ public class ExtractMapper
     }
 
     // get the tables
-    HashTbl = HBaseTables.summon(
-      conf, HBaseTables.HASH_TBL_B, HBaseTables.HASH_COLFAM_B
-    );
-
-    EntryTbl =
-      FsEntryHBaseOutputFormat.getHTable(context, HBaseTables.ENTRIES_TBL_B);
+    HashTbl = new HTable(conf, HBaseTables.HASH_TBL_B);
+    EntryTbl = new HTable(conf, HBaseTables.ENTRIES_TBL_B);
   }
 
   void openImgFile(Path p, FileSystem fs) throws IOException {

@@ -113,6 +113,14 @@ public class ExtractData extends Configured implements Tool {
     // job.getConfiguration().setBoolean("mapred.task.profile", true);
     // job.getConfiguration().setBoolean("mapreduce.task.profile", true);
 
+    HBaseTables.summon(
+      conf, HBaseTables.HASH_TBL_B, HBaseTables.HASH_COLFAM_B
+    );
+
+    HBaseTables.summon(
+      conf, HBaseTables.ENTRIES_TBL_B, HBaseTables.ENTRIES_COLFAM_B
+    );
+
     final boolean result = job.waitForCompletion(true);
     if (result) {
       LoadIncrementalHFiles loader = new LoadIncrementalHFiles(conf);

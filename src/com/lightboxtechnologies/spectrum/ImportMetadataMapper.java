@@ -44,14 +44,7 @@ public class ImportMetadataMapper
     super.setup(context);
 
     final Configuration conf = context.getConfiguration();
-
-    final String tblName = conf.get(
-      HBaseTables.ENTRIES_TBL_VAR, HBaseTables.ENTRIES_TBL
-    );
-
-    Table = HBaseTables.summon(
-      conf, tblName.getBytes(), HBaseTables.ENTRIES_COLFAM_B
-    );
+    Table = new HTable(conf, HBaseTables.ENTRIES_TBL_B);
   }
 
   @Override
