@@ -392,7 +392,7 @@ public class ExtractMapper
       throw interrupt;
     }
     catch (Exception e) {
-      LOG.error("Extraction exception " + e);
+      LOG.error("Extraction exception:", e);
     }
     return numFiles;
   }
