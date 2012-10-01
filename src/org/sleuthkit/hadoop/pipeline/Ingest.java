@@ -24,8 +24,7 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 import com.lightboxtechnologies.spectrum.ExtractData;
-import com.lightboxtechnologies.spectrum.ExtentsExtractor;
-import com.lightboxtechnologies.spectrum.JsonImport;
+import com.lightboxtechnologies.spectrum.ImportMetadata;
 
 public class Ingest extends Configured implements Tool {
   public int run(String[] args) throws Exception {
@@ -40,17 +39,11 @@ public class Ingest extends Configured implements Tool {
     final String friendlyName = args[3];
     final String extents = "/texaspete/data/" + imgID + "/extents";   
 
-    return 
+    return
         ToolRunner.run(
           HBaseConfiguration.create(),
-          new JsonImport(),
-          new String[]{ jsonImg, imgID, friendlyName }
-        ) == 0
-      &&
-        ToolRunner.run(
-          new Configuration(),
-          new ExtentsExtractor(),
-          new String[]{ imgID, friendlyName, extents }
+          new ImportMetadata(),
+          new String[]{ jsonImg, imgID, friendlyName, extents }
         ) == 0
       &&
         ToolRunner.run(
