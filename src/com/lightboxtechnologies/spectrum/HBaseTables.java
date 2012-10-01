@@ -66,7 +66,7 @@ public class HBaseTables {
     final HTableDescriptor tableDesc = new HTableDescriptor(tname);
     if (!tableDesc.hasFamily(cfam)) {
       final HColumnDescriptor colFamDesc = new HColumnDescriptor(cfam);
-      colFamDesc.setCompressionType(Compression.Algorithm.GZ);
+      colFamDesc.setCompressionType(Compression.Algorithm.SNAPPY);
       tableDesc.addFamily(colFamDesc);
     }
 
