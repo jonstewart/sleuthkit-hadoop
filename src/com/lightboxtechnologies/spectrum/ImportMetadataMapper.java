@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
 import org.apache.commons.logging.Log;
@@ -37,8 +36,6 @@ public class ImportMetadataMapper
     new ArrayList<Map<String,Object>>();
   protected final Map<String,Object> Output = new HashMap<String,Object>();
 
-  protected final Hex Hexer = new Hex();
-
   protected final LongWritable Offset = new LongWritable();
   protected final JsonWritable JsonOutput = new JsonWritable();
 
@@ -62,7 +59,7 @@ public class ImportMetadataMapper
                                      throws IOException, InterruptedException {
     // read the JSON produced by fsrip
     if (!Entry.parseJson(value.toString())) {
-      // TODO: inidicate failure here?
+      LOG.warn("JSON parse failed: " + value.toString());
       return;
     }
 
@@ -110,7 +107,7 @@ public class ImportMetadataMapper
             Offset.set(((Number)Extents.get(0).get("addr")).longValue());
             Output.put("size", Entry.get("size"));
             Output.put("fp", Entry.fullPath());
-            Output.put("id", new String(Hexer.decode(Id)));
+            Output.put("id", Hex.encodeHexString(Id));
             JsonOutput.set(Output);
             LOG.info(JsonOutput.toString());
             context.write(Offset, JsonOutput);
@@ -152,13 +149,7 @@ public class ImportMetadataMapper
 
   protected String errorString(Exception e) {
     final StringBuilder b = new StringBuilder("Exception on ");
-    try {
-      b.append(new String(Hexer.decode(Id)));
-    }
-    catch (DecoderException de) {
-      // FIXME: this is goofy, should never happen
-      b.append("Id could not be encoded!!!");
-    }
+    b.append(Hex.encodeHexString(Id));
     b.append(":");
     b.append(Entry.fullPath());
     b.append(": ");
