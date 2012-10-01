@@ -41,18 +41,19 @@ class ExtentsExtractorMapper
 
   protected boolean setExtents(List<Map<String,Object>> dataRuns, long fsByteOffset, long fsBlockSize) {
     Extents.clear();
-    if (!dataRuns.isEmpty()) {
-      for (Map<String,Object> run: dataRuns) {
-        Map<String,Object> dr = new HashMap<String,Object>();
-        dr.put("flags", run.get("flags"));
-        dr.put("addr", (((Number)run.get("addr")).longValue() * fsBlockSize) + fsByteOffset);
-        dr.put("offset", ((Number)run.get("offset")).longValue() * fsBlockSize);
-        dr.put("len", ((Number)run.get("len")).longValue() * fsBlockSize);
-        Extents.add(dr);
-        return true;
-      }
+    if (dataRuns.isEmpty()) {
+      return false;
     }
-    return false;
+
+    for (Map<String,Object> run: dataRuns) {
+      Map<String,Object> dr = new HashMap<String,Object>();
+      dr.put("flags", run.get("flags"));
+      dr.put("addr", (((Number)run.get("addr")).longValue() * fsBlockSize) + fsByteOffset);
+      dr.put("offset", ((Number)run.get("offset")).longValue() * fsBlockSize);
+      dr.put("len", ((Number)run.get("len")).longValue() * fsBlockSize);
+      Extents.add(dr);
+    }
+    return true;
   }
 
   @Override
