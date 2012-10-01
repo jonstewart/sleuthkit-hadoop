@@ -41,6 +41,7 @@ public class ImportMetadata extends Configured implements Tool {
     job.setReducerClass(Reducer.class);
     job.setOutputKeyClass(LongWritable.class);
     job.setOutputValueClass(JsonWritable.class);
+    job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
     FileInputFormat.addInputPath(job, new Path(jsonPath));
     SequenceFileOutputFormat.setOutputPath(job, new Path(outDir));
