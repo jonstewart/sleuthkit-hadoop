@@ -42,11 +42,6 @@ extends SKMapper<ImmutableHexWritable, FsEntry, NullWritable, Text>{
     
     final Text output = new Text();
     
-    @Override
-    public void setup(Context ctx) {
-        super.setup(ctx);
-    }
-
     @SuppressWarnings("unchecked")
     @Override
     public void map(ImmutableHexWritable key, FsEntry value, Context context)

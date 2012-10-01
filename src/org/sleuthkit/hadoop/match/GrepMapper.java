@@ -43,7 +43,7 @@ extends SKMapper<ImmutableHexWritable, FsEntry, ImmutableHexWritable, FsEntry> {
     private List<Pattern> patterns = new ArrayList<Pattern>();
     
     @Override
-    public void setup(Context ctx) {
+    public void setup(Context ctx) throws IOException {
         String[] regexlist = ctx.getConfiguration().get("mapred.mapper.regex").split("\n");
         for (String item : regexlist) {
             if ("".equals(item)) continue; // don't add empty regexes

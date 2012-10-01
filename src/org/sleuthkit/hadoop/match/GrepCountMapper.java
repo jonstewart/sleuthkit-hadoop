@@ -38,11 +38,6 @@ extends SKMapper<ImmutableHexWritable, FsEntry, LongWritable, LongWritable>{
 
     final Logger LOG = LoggerFactory.getLogger(GrepCountMapper.class);
 
-    @Override
-    public void setup(Context ctx) {
-        super.setup(ctx);
-    }
-
     protected final LongWritable okey = new LongWritable();
     protected final LongWritable oval = new LongWritable(1);
 

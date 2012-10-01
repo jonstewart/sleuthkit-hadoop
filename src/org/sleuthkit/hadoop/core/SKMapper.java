@@ -16,6 +16,8 @@
 
 package org.sleuthkit.hadoop.core;
 
+import java.io.IOException;
+
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.DecoderException;
@@ -33,7 +35,7 @@ extends Mapper<KEYIN, VALIN, KEYOUT, VALOUT> {
   public static final String USER_ID_KEY = "org.sleuthkit.hadoop.userimageid";
   
   @Override
-  public void setup(Context ctx) {
+  public void setup(Context ctx) throws IOException {
     id = ctx.getConfiguration().get(ID_KEY, "DEFAULT_IMAGE_ID");
     try {
       ImageIDBytes = Hex.decodeHex(id.toCharArray());
