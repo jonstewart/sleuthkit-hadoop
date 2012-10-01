@@ -45,6 +45,9 @@ public class ImportMetadataMapper
 
     final Configuration conf = context.getConfiguration();
     Table = new HTable(conf, HBaseTables.ENTRIES_TBL_B);
+
+    // ensure that the extents list is put into the output map
+    Output.put("extents", Extents);
   }
 
   @Override
