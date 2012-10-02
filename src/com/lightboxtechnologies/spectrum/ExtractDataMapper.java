@@ -55,7 +55,7 @@ import java.util.UUID;
 
 import com.lightboxtechnologies.io.IOUtils;
 
-public class ExtractMapper
+public class ExtractDataMapper
        extends Mapper<NullWritable,FileSplit,ImmutableBytesWritable,KeyValue> {
 
   private static final Log LOG =

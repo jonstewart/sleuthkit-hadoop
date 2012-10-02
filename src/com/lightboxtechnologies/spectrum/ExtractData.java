@@ -79,7 +79,7 @@ public class ExtractData extends Configured implements Tool {
       imageID, friendlyName, "ExtractData", conf
     );
     job.setJarByClass(ExtractData.class);
-    job.setMapperClass(ExtractMapper.class);
+    job.setMapperClass(ExtractDataMapper.class);
     job.setReducerClass(KeyValueSortReducer.class);
     job.setNumReduceTasks(1);
 
