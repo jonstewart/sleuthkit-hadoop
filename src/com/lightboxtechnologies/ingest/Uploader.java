@@ -17,17 +17,17 @@ limitations under the License.
 package com.lightboxtechnologies.ingest;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.util.GenericOptionsParser;
-
+import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.DecoderException;
 
-import java.io.*;
-
+import java.io.IOException;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -35,26 +35,31 @@ import java.security.NoSuchAlgorithmException;
 import com.lightboxtechnologies.io.IOUtils;
 import com.lightboxtechnologies.spectrum.FsEntryUtils;
 
-public class Uploader {
-  public static void main(String[] args) throws Exception {
-    final Configuration conf = new Configuration();
-    final String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
-
-    if (otherArgs.length != 1) {
+public class Uploader extends Configured implements Tool {
+  public int run(String[] args) throws IOException {
+    if (args.length != 1) {
       System.err.println("Usage: Uploader <dest path>");
       System.err.println("Writes data to HDFS path from stdin");
-      System.exit(2);
+      return 2;
     }
 
-    MessageDigest hasher = FsEntryUtils.getHashInstance("MD5");
-    DigestInputStream hashedIn = new DigestInputStream(System.in, hasher);
+    final String dst = args[0];
 
-    FileSystem fs = FileSystem.get(conf);
-    Path path = new Path(otherArgs[0]);
-    FSDataOutputStream outFile = fs.create(path, true);
+    final Configuration conf = getConf();
+
+    final MessageDigest hasher = FsEntryUtils.getHashInstance("MD5");
+    final DigestInputStream hashedIn = new DigestInputStream(System.in, hasher);
+
+    final FileSystem fs = FileSystem.get(conf);
+    final Path path = new Path(dst);
+    final FSDataOutputStream outFile = fs.create(path, true);
 
     IOUtils.copyLarge(hashedIn, outFile, new byte[1024 * 1024]);
-
     System.out.println(new String(Hex.encodeHex(hasher.digest())));
+    return 0;
+  }
+
+  public static void main(String[] args) throws Exception {
+    System.exit(ToolRunner.run(new Configuration(), new Uploader(), args));
   }
 }
