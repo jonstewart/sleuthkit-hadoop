@@ -18,6 +18,9 @@ package com.lightboxtechnologies.ingest;
 
 import java.io.IOException;
 
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -39,7 +42,7 @@ import com.lightboxtechnologies.spectrum.HBaseTables;
  * @author Joel Uckelman
  */
 public class InfoPutter extends Configured implements Tool {
-  public int run(String[] args) throws IOException {
+  public int run(String[] args) throws DecoderException, IOException {
     if (args.length != 3) {
       System.err.println("Usage: InfoPutter <imageID> <friendly_name> <pathToImageOnHDFS>");
       return 1;
@@ -59,7 +62,7 @@ public class InfoPutter extends Configured implements Tool {
       );
 
       // check whether the image ID is in the images table
-      final byte[] hash = Bytes.toBytes(imageID);
+      final byte[] hash = new Hex().decode(imageID.getBytes());
 
       final Get get = new Get(hash);
       final Result result = imgTable.get(get);
@@ -73,7 +76,7 @@ public class InfoPutter extends Configured implements Tool {
 
         final byte[] friendly_b = friendlyName.getBytes();
         final byte[] json_b = IOUtils.toByteArray(System.in);
-        final byte[] path_b = imgPath.getBytes(); 
+        final byte[] path_b = imgPath.getBytes();
 
         final Put put = new Put(hash);
         put.add(HBaseTables.IMAGES_COLFAM_B, friendly_col, friendly_b);
