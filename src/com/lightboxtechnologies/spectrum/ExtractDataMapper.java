@@ -59,7 +59,7 @@ public class ExtractDataMapper
        extends Mapper<NullWritable,FileSplit,ImmutableBytesWritable,KeyValue> {
 
   private static final Log LOG =
-    LogFactory.getLog(ExtractMapper.class.getName());
+    LogFactory.getLog(ExtractDataMapper.class.getName());
 
   static enum FileTypes {
     SMALL,
