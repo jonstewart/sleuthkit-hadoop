@@ -95,7 +95,7 @@ public class ExtractData extends Configured implements Tool {
     job.setOutputKeyClass(ImmutableBytesWritable.class);
     job.setOutputValueClass(KeyValue.class);
 
-    conf.setInt("mapred.job.reuse.jvm.num.tasks", -1);
+    conf.setInt("mapreduce.job.jvm.numtasks", -1);
     
     final FileSystem fs = FileSystem.get(conf);
     Path hfileDir = new Path("/texaspete/ev/tmp", UUID.randomUUID().toString());
