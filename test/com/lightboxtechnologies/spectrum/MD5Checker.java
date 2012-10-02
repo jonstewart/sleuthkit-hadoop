@@ -1,6 +1,9 @@
 package com.lightboxtechnologies.spectrum;
 
 import java.io.IOException;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
@@ -15,6 +18,10 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
+import org.apache.commons.io.output.NullOutputStream;
+
+import com.lightboxtechnologies.io.IOUtils;
+
 import org.sleuthkit.hadoop.core.SKJobFactory;
 import org.sleuthkit.hadoop.core.SKMapper;
 
@@ -26,8 +33,26 @@ public class MD5Checker extends Configured implements Tool {
 
     @Override
     protected void map(ImmutableHexWritable key, FsEntry value, Context context) throws IOException, InterruptedException {
+      final byte[] actual_md5 = (byte[]) value.get("md5");
+      if (actual_md5 == null) {
+        return;
+      }
+
+      final MessageDigest hasher = FsEntryUtils.getHashInstance("MD5");
+      final DigestInputStream in =
+        new DigestInputStream(value.getInputStream(), hasher);
+
+      IOUtils.copyLarge(
+        in,
+        NullOutputStream.NULL_OUTPUT_STREAM,
+        new byte[1024 * 1024]
+      );
+
       outKey.set(value.fullPath());
-      outVal.set(Hex.encodeHexString((byte[]) value.get("md5")));
+      outVal.set(
+        Hex.encodeHexString(actual_md5) + ' ' +
+        Hex.encodeHexString(hasher.digest())
+      );
       context.write(outKey, outVal);
     }
   }
