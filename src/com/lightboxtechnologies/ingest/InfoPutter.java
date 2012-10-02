@@ -40,8 +40,8 @@ import com.lightboxtechnologies.spectrum.HBaseTables;
  */
 public class InfoPutter extends Configured implements Tool {
   public int run(String[] args) throws IOException {
-    if (args.length != 2) {
-      System.err.println("Usage: InfoPutter <imageID> <friendly_name>");
+    if (args.length != 3) {
+      System.err.println("Usage: InfoPutter <imageID> <friendly_name> <pathToImageOnHDFS>");
       return 1;
     }
 
@@ -49,6 +49,7 @@ public class InfoPutter extends Configured implements Tool {
 
     final String imageID = args[0];
     final String friendlyName = args[1];
+    final String imgPath = args[2];
 
     HTable imgTable = null;
 
@@ -68,13 +69,16 @@ public class InfoPutter extends Configured implements Tool {
       
         final byte[] friendly_col = "friendly_name".getBytes();
         final byte[] json_col = "json".getBytes();
+        final byte[] path_col = "img_path".getBytes();
 
         final byte[] friendly_b = friendlyName.getBytes();
         final byte[] json_b = IOUtils.toByteArray(System.in);
+        final byte[] path_b = imgPath.getBytes(); 
 
         final Put put = new Put(hash);
         put.add(HBaseTables.IMAGES_COLFAM_B, friendly_col, friendly_b);
         put.add(HBaseTables.IMAGES_COLFAM_B, json_col, json_b);
+        put.add(HBaseTables.IMAGES_COLFAM_B, path_col, path_b);
 
         imgTable.put(put);
 

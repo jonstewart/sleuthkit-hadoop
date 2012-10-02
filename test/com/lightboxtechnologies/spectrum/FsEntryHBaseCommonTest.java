@@ -159,7 +159,7 @@ public class FsEntryHBaseCommonTest {
            input = new byte[] {0x01, 0x02, 0x03, 0x04},
            expected = new byte[4];
     StreamProxy proxy = (StreamProxy)unmarshall(c, input);
-    InputStream stream = proxy.open(new RawLocalFileSystem());
+    InputStream stream = proxy.open(new RawLocalFileSystem(), null, null);
     assertEquals(4, stream.read(expected));
     assertArrayEquals(expected, input);
     assertEquals(0, stream.available());
@@ -211,7 +211,7 @@ public class FsEntryHBaseCommonTest {
     assertTrue(actualStreams.containsKey("Content"));
     assertTrue(actualStreams.containsKey("Slack"));
     assertEquals("some/bullshit/file.dat", ((FileProxy)actualStreams.get("Content")).getPath());
-    InputStream str = actualStreams.get("Slack").open(new RawLocalFileSystem());
+    InputStream str = actualStreams.get("Slack").open(new RawLocalFileSystem(), null, null);
     byte[] tempBuf = new byte[6];
     assertEquals(6, str.read(tempBuf));
     assertEquals(0, str.available());

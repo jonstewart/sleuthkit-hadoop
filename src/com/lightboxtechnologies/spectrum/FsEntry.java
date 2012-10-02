@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.io.*;
 
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FSDataInputStream;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -43,6 +44,8 @@ public class FsEntry extends HashMap<String,Object> {
   private Date   Updated;
   private long   Size;
 
+  private FSDataInputStream DiskImage;
+
   private final Map<String, Object> Changed = new HashMap<String, Object>();
 
   private final Map<String,StreamProxy> Streams = new HashMap<String,StreamProxy>();
@@ -54,6 +57,10 @@ public class FsEntry extends HashMap<String,Object> {
     Name = null;
     super.clear();
     Changed.clear();
+  }
+
+  public void setDiskImage(FSDataInputStream in) {
+    DiskImage = in;
   }
 
   public Map<String, Object> getChangedItems() {
@@ -133,7 +140,7 @@ public class FsEntry extends HashMap<String,Object> {
     final StreamProxy val = Streams.get(key);
     if (val != null) {
       try {
-        return new PyFile(val.open(FS));
+        return new PyFile(val.open(FS, DiskImage, this));
       }
       catch (IOException ex) {}
     }
@@ -147,7 +154,7 @@ public class FsEntry extends HashMap<String,Object> {
   public InputStream getInputStream(String key) throws IOException {
     final StreamProxy p = Streams.get(key);
     if (p != null) {
-      return p.open(FS);
+      return p.open(FS, DiskImage, this);
     }
     return null;
   }

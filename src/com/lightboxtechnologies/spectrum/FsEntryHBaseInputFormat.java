@@ -35,6 +35,7 @@ import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.filter.RowFilter;
@@ -54,9 +55,11 @@ import com.lightboxtechnologies.io.IOUtils;
 import org.sleuthkit.hadoop.core.SKMapper;
 
 public class FsEntryHBaseInputFormat extends InputFormat implements Configurable {
+  private static final Log LOG = LogFactory.getLog(FsEntryHBaseInputFormat.class);
+
   private byte[] ImageID;
   private TableInputFormat TblInput;
-  private static final Log LOG = LogFactory.getLog(FsEntryHBaseInputFormat.class);
+  private HTable ImagesTbl;
 
   public FsEntryHBaseInputFormat() {
     TblInput = new TableInputFormat();
@@ -106,18 +109,27 @@ public class FsEntryHBaseInputFormat extends InputFormat implements Configurable
     else {
       LOG.error("Table name was null");
     }
-    Configuration conf = HBaseConfiguration.create(c);
+
+    final Configuration conf = HBaseConfiguration.create(c);
     LOG.info("hbase.zookeeper.quorum:" + conf.get("hbase.zookeeper.quorum"));
     TblInput.setConf(conf);
     String id = conf.get(SKMapper.ID_KEY);
     if (id != null) {
       LOG.info("scan is for image id " + id);
+      // we catch and rethrow because Configurable.setConf() doesn't throw
       try {
         ImageID = Hex.decodeHex(id.toCharArray());
       }
       catch (DecoderException e) {
         throw new RuntimeException(e);
       }
+    }
+
+    try {
+      ImagesTbl = new HTable(conf, HBaseTables.IMAGES_TBL_B);
+    }
+    catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -135,7 +147,7 @@ public class FsEntryHBaseInputFormat extends InputFormat implements Configurable
       final byte[] first = scan.getStartRow();
       final byte[] last = scan.getStopRow();     
 
-      outer = new FsEntryRecordReader(inner, first, last, ImageID);
+      outer = new FsEntryRecordReader(inner, first, last, ImageID, ImagesTbl);
       return outer;
     }
     finally {

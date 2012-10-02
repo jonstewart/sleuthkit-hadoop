@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.IOException;
 
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
 
 class FileProxy implements StreamProxy {
@@ -35,7 +36,8 @@ class FileProxy implements StreamProxy {
     return FilePath;
   }
 
-  public InputStream open(FileSystem fs) throws IOException {
+  public InputStream open(FileSystem fs, FSDataInputStream di, FsEntry entry)
+                                                           throws IOException {
     return fs.open(new Path(FilePath));
   }
 }

@@ -257,29 +257,12 @@ public class ExtractDataMapper
     context.getCounter(FileTypes.BIG).increment(1);
 
     final Map<String,Object> rec = new HashMap<String,Object>();
+    hashAndExtract(rec, NullStream, file, map, context);
 
-    OutputStream fout =  null;
-    try {
-      fout = fs.create(outPath, true);
-      hashAndExtract(rec, fout, file, map, context);
-    }
-    finally {
-      IOUtils.closeQuietly(fout);
-    }
+    final List<Map<String,Object>> extents =
+      (List<Map<String,Object>>) map.get("extents");
 
-    final String hash = new String(Hex.encodeHex((byte[])rec.get("md5")));
-    final Path subDir = new Path("/texaspete/ev", hashFolder(hash)),
-             hashPath = new Path(subDir, hash);
-    fs.mkdirs(subDir);
-
-    if (fs.exists(hashPath)) {
-      context.getCounter(FileTypes.BIG_DUPES).increment(1);
-    }
-    else if (!fs.rename(outPath, hashPath)) {
-      LOG.warn("Could not rename " + outPath + " to " + hashPath);
-      context.getCounter(FileTypes.PROBLEMS).increment(1);
-    }
-    final StreamProxy content = new FileProxy(hashPath.toString());
+    final StreamProxy content = new ExtentsProxy();
     rec.put("Content", content);
     return rec;
   }

@@ -59,7 +59,6 @@ public class ImportMetadataMapper
       return;
     }
 
-    // write the metadata to HBase
     FsEntryUtils.makeFsEntryKey(
       Id,
       getImageID(),
@@ -68,6 +67,7 @@ public class ImportMetadataMapper
       Hasher
     );
 
+    // write the metadata to HBase
     final Put p = FsEntryPut.create(Id, Entry, HBaseTables.ENTRIES_COLFAM_B);
     if (p.isEmpty()) {
       // TODO: inidicate failure here?

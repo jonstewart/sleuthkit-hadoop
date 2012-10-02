@@ -19,6 +19,8 @@ public class FsEntryPut {
 
   private static final ObjectMapper mapper = new ObjectMapper();
 
+  private static final byte[] ZERO = { 0 };
+
   public static void add(Put p, Map<String,?> map, byte[] colFam) {
     // should this be in the -Common class?
     byte[] col = null,
@@ -35,34 +37,37 @@ public class FsEntryPut {
 
       col = FsEntryHBaseCommon.createColSpec(val, key);
       switch (col[0]) {
-        case FsEntryHBaseCommon.STRING:
-          binVal = Bytes.toBytes((String)val);
-          break;
-        case FsEntryHBaseCommon.LONG:
-          binVal = Bytes.toBytes(((Number)val).longValue());
-          break;
-        case FsEntryHBaseCommon.DATE:
-          binVal = Bytes.toBytes(((Date)val).getTime());
-          break;
-        case FsEntryHBaseCommon.JSON:
-          try {
-            binVal = mapper.writeValueAsBytes(val);
-          }
-          catch (IOException e) {
-            throw new RuntimeException("Failed to serialize to JSON: " + val);
-          }
-          break;
-        case FsEntryHBaseCommon.BYTE_ARRAY:
-          binVal = (byte[])val;
-          break;
-        case FsEntryHBaseCommon.BUFFER_STREAM:
-          binVal = ((BufferProxy)val).getBuffer();
-          break;
-        case FsEntryHBaseCommon.FILE_STREAM:
-          binVal = Bytes.toBytes(((FileProxy)val).getPath());
-          break;
-        default:
-          throw new RuntimeException("Didn't get something that could be converted to a byte[], " + val.toString() + " for key " + key);
+      case FsEntryHBaseCommon.STRING:
+        binVal = Bytes.toBytes((String)val);
+        break;
+      case FsEntryHBaseCommon.LONG:
+        binVal = Bytes.toBytes(((Number)val).longValue());
+        break;
+      case FsEntryHBaseCommon.DATE:
+        binVal = Bytes.toBytes(((Date)val).getTime());
+        break;
+      case FsEntryHBaseCommon.JSON:
+        try {
+          binVal = mapper.writeValueAsBytes(val);
+        }
+        catch (IOException e) {
+          throw new RuntimeException("Failed to serialize to JSON: " + val);
+        }
+        break;
+      case FsEntryHBaseCommon.BYTE_ARRAY:
+        binVal = (byte[])val;
+        break;
+      case FsEntryHBaseCommon.BUFFER_STREAM:
+        binVal = ((BufferProxy)val).getBuffer();
+        break;
+      case FsEntryHBaseCommon.FILE_STREAM:
+        binVal = Bytes.toBytes(((FileProxy)val).getPath());
+        break;
+      case FsEntryHBaseCommon.EXTENTS_STREAM:
+        binVal = ZERO;
+        break;
+      default:
+        throw new RuntimeException("Didn't get something that could be converted to a byte[], " + val.toString() + " for key " + key);
       }
       p.add(colFam, col, binVal);
     }
