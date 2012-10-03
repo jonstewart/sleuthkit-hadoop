@@ -58,7 +58,7 @@ HdfsImage=$FriendlyName.dd
 echo "jar file is ${JarFile}"
 
 # rip filesystem metadata, upload to hdfs
-$FSRIP dumpfs $ImagePath | $HADOOP jar $JarFile com.lightboxtechnologies.ingest.Uploader $JsonFile
+$FSRIP dumpfs $ImagePath | $HADOOP fs -put $JsonFile
 if [ $? -ne 0 ]; then
   echo "image metadata upload failed"
   exit 1
@@ -79,7 +79,7 @@ fi
 echo "Image ID is ${ImageID}"
 
 # rip image info, insert in hbase
-$FSRIP info $ImagePath | HADOOP_CLASSPATH=$HADOOP_CLASSPATH:/usr/lib/hbase/hbase.jar $HADOOP jar $JarFile com.lightboxtechnologies.ingest.InfoPutter $ImageID $FriendlyName
+$FSRIP info $ImagePath | HADOOP_CLASSPATH=$HADOOP_CLASSPATH:/usr/lib/hbase/hbase.jar $HADOOP jar $JarFile com.lightboxtechnologies.ingest.InfoPutter $ImageID $FriendlyName $HdfsImage
 if [ $? -ne 0 ]; then
   echo "image info registration failed"
   exit 1

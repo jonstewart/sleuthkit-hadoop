@@ -16,12 +16,12 @@
 
 package com.lightboxtechnologies.spectrum;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 
 import org.apache.hadoop.hbase.util.Bytes;
 
@@ -36,6 +36,7 @@ public class FsEntryHBaseCommon {
   public static final byte BYTE_ARRAY = 4;
   public static final byte BUFFER_STREAM = 5;
   public static final byte FILE_STREAM = 6;
+  public static final byte EXTENTS_STREAM = 7;
 
   public static byte typeVal(Object o) {
     if (o instanceof Long || o instanceof Integer) {
@@ -58,6 +59,9 @@ public class FsEntryHBaseCommon {
     }
     else if (o instanceof FileProxy) {
       return FILE_STREAM;
+    }
+    else if (o instanceof ExtentsProxy) {
+      return EXTENTS_STREAM;
     }
     else {
       return -1;
@@ -90,25 +94,27 @@ public class FsEntryHBaseCommon {
   public static Object unmarshall(byte[] colSpec, byte[] colVal) {
     byte type = colSpec[0];
     switch (type) {
-      case LONG:
-        return Bytes.toLong(colVal);
-      case STRING:
-        return Bytes.toString(colVal);
-      case DATE:
-        return new Date(Bytes.toLong(colVal));
-      case JSON:
-        try {
-          return mapper.readValue(colVal, 0, colVal.length, Object.class);
-        }
-        catch (IOException e) {
-          // does not parse, failover to byte array
-        }
-      case BYTE_ARRAY:
-        return colVal;
-      case BUFFER_STREAM:
-        return new BufferProxy(colVal);
-      case FILE_STREAM:
-        return new FileProxy(Bytes.toString(colVal));
+    case LONG:
+      return Bytes.toLong(colVal);
+    case STRING:
+      return Bytes.toString(colVal);
+    case DATE:
+      return new Date(Bytes.toLong(colVal));
+    case JSON:
+      try {
+        return mapper.readValue(colVal, 0, colVal.length, Object.class);
+      }
+      catch (IOException e) {
+        // does not parse, failover to byte array
+      }
+    case BYTE_ARRAY:
+      return colVal;
+    case BUFFER_STREAM:
+      return new BufferProxy(colVal);
+    case FILE_STREAM:
+      return new FileProxy(Bytes.toString(colVal));
+    case EXTENTS_STREAM:
+      return new ExtentsProxy();
     }
     return null;
   }
@@ -121,17 +127,21 @@ public class FsEntryHBaseCommon {
     for (Map.Entry<byte[], byte[]> pair: set) {
       key = pair.getKey();
       switch (key[0]) {
-        case LONG:
-        case STRING:
-        case DATE:
-        case JSON:
-        case BYTE_ARRAY:
-          out.put(colName(key), unmarshall(key, pair.getValue()));
-          break;
-        case BUFFER_STREAM:
-        case FILE_STREAM:
-          streams.put(colName(key), (StreamProxy)unmarshall(key, pair.getValue()));
-          break;
+      case LONG:
+      case STRING:
+      case DATE:
+      case JSON:
+      case BYTE_ARRAY:
+        out.put(colName(key), unmarshall(key, pair.getValue()));
+        break;
+      case BUFFER_STREAM:
+      case FILE_STREAM:
+      case EXTENTS_STREAM:
+        streams.put(
+          colName(key),
+          (StreamProxy) unmarshall(key, pair.getValue())
+        );
+        break;
       }
     }
   }

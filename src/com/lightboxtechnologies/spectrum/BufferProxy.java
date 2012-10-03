@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FSDataInputStream;
 
 class BufferProxy implements StreamProxy {
 
@@ -33,7 +34,7 @@ class BufferProxy implements StreamProxy {
     return Buffer;
   }
 
-  public InputStream open(FileSystem fs) { // doesn't need FS
+  public InputStream open(FileSystem fs, FSDataInputStream di, FsEntry entry) { // doesn't need FS
     return new ByteArrayInputStream(Buffer);
   }
 }
