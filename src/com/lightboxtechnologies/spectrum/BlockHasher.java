@@ -66,8 +66,8 @@ public class BlockHasher extends Configured implements Tool {
     );
     job.setJarByClass(BlockHasher.class);
     job.setMapperClass(BlockHashMapper.class);
-    job.setReducerClass(Reducer.class);
-    job.setNumReduceTasks(1);
+    // job.setReducerClass(Reducer.class);
+    job.setNumReduceTasks(0);
 
     // job ctor copies the Configuration we pass it, get the real one
     conf = job.getConfiguration();
