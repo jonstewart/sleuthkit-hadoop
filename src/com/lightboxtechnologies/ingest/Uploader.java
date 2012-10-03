@@ -55,7 +55,7 @@ public class Uploader extends Configured implements Tool {
     final FSDataOutputStream outFile = fs.create(path, true);
 
     IOUtils.copyLarge(hashedIn, outFile, new byte[1024 * 1024]);
-    System.out.println(new String(Hex.encodeHex(hasher.digest())));
+    System.out.println(Hex.encodeHexString(hasher.digest()));
     return 0;
   }
 
