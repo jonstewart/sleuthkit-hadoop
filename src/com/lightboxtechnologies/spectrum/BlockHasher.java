@@ -33,6 +33,7 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.MD5Hash;
 
@@ -49,7 +50,7 @@ public class BlockHasher extends Configured implements Tool {
 
 
   public int run(String[] args) throws Exception {
-    if (args.length != 4) {
+    if (args.length != 3) {
       System.err.println("Usage: BlockHasher <imageID> <image> <output>");
       return 2;
     }
@@ -79,15 +80,16 @@ public class BlockHasher extends Configured implements Tool {
     job.setOutputFormatClass(TextOutputFormat.class);
     job.setOutputKeyClass(LongWritable.class);
     job.setOutputValueClass(MD5Hash.class);
+    FileOutputFormat.setOutputPath(job, new Path(output));
 
     conf.setInt("mapred.job.reuse.jvm.num.tasks", -1);
     
-    return job.waitForCompletion(true);
+    return job.waitForCompletion(true) ? 0: 1;
   }
 
   public static void main(String[] args) throws Exception {
     System.exit(
-      ToolRunner.run(HBaseConfiguration.create(), new ExtractData(), args)
+      ToolRunner.run(HBaseConfiguration.create(), new BlockHasher(), args)
     );
   }
 }

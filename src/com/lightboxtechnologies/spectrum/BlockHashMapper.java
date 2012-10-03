@@ -22,7 +22,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.MD5Hash;
-import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 
@@ -50,27 +50,12 @@ public class BlockHashMapper
     LogFactory.getLog(ExtractMapper.class.getName());
 
   private static final int BLOCK_SIZE = 512;
-  private final byte[] Buffer = new byte[BLOCK_SIZE];
+  private final byte[] Buffer = new byte[BLOCK_SIZE * 1024];
 
   private FSDataInputStream ImgFile = null;
   private Path ImgPath = null;
 
-  private LongWritable  BlockOffset;
-
-  @Override
-  protected void setup(Context context) throws IOException {
-    LOG.info("Setup called");
-    
-    final Configuration conf = context.getConfiguration();
-
-    // ensure that all mappers have the same timestamp
-    try {
-      timestamp = Long.parseLong(conf.get("timestamp"));
-    }
-    catch (NumberFormatException e) {
-      throw new RuntimeException(e);
-    }
-  }
+  private final LongWritable  BlockOffset = new LongWritable();
 
   void openImgFile(Path p, FileSystem fs) throws IOException {
     if (ImgFile != null && p.equals(ImgPath)) {
@@ -78,7 +63,7 @@ public class BlockHashMapper
     }
     IOUtils.closeQuietly(ImgFile);
     ImgPath = p;
-    ImgFile = fs.open(p, 64 * 1024 * 1024);
+    ImgFile = fs.open(p, 512 * 1024);
   }
 
   @Override
@@ -94,14 +79,18 @@ public class BlockHashMapper
 
     openImgFile(split.getPath(), fs);
 
-    long curOffset = startOffset
+    long numBlocks = 0;
+    long curOffset = startOffset;
     while (curOffset < endOffset) {
       ImgFile.readFully(curOffset, Buffer);
-      BlockOffset.set(curOffset);
-      context.write(BlockOffset, MD5Hash.digest(Buffer));
-      curOffset += BLOCK_SIZE;
+      for (int i = 0; i < Buffer.length; i += BLOCK_SIZE) {
+        BlockOffset.set(curOffset + i);
+        context.write(BlockOffset, MD5Hash.digest(Buffer, i, BLOCK_SIZE));
+        ++numBlocks;
+      }
+      curOffset += Buffer.length;
     }
-    LOG.info("This split had " + numFiles + " blocks in it");
+    LOG.info("This split had " + numBlocks + " blocks in it");
   }
 
   @Override
