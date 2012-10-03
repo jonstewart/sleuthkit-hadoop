@@ -40,8 +40,10 @@ public class SKJobFactory {
     FileStatus[] jars = fs.globStatus(new Path("/texaspete/lib/*.jar"));
     if (jars.length > 0) {
       for (FileStatus jar: jars) {
-        LOG.info("Adding jar to DC/CP: " + jar.getPath());
-        DistributedCache.addFileToClassPath(jar.getPath(), conf, fs);
+        String jarRelPath = "/texaspete/lib/" + jar.getPath().getName();
+
+        LOG.info("Adding jar to DC/CP: " + jarRelPath);
+        DistributedCache.addFileToClassPath(new Path(jarRelPath), conf, fs);
       }
     }
     else {
