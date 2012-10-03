@@ -67,14 +67,6 @@ public class ImportMetadataMapper
       Hasher
     );
 
-    // write the metadata to HBase
-    final Put p = FsEntryPut.create(Id, Entry, HBaseTables.ENTRIES_COLFAM_B);
-    if (p.isEmpty()) {
-      // TODO: inidicate failure here?
-      return;
-    }
-    Table.put(p);
-
     // extract the extents data
     // TODO: This try/catch is nasty, fix it so we check return values
     // instead of throwing on bad input.
@@ -100,6 +92,7 @@ public class ImportMetadataMapper
           }
           final List<Map<String, Object>> runs = (List<Map<String,Object>>)nrds;
           if (setExtents(runs, fsByteOffset, fsBlockSize) && !Extents.isEmpty()) {
+            Entry.put("extents", Extents);
             Offset.set(((Number)Extents.get(0).get("addr")).longValue());
             Output.put("size", Entry.get("size"));
             Output.put("fp", Entry.fullPath());
@@ -124,6 +117,14 @@ public class ImportMetadataMapper
       LOG.warn(errorString(e));
       e.printStackTrace();
     }
+
+    // write the metadata to HBase
+    final Put p = FsEntryPut.create(Id, Entry, HBaseTables.ENTRIES_COLFAM_B);
+    if (p.isEmpty()) {
+      // TODO: inidicate failure here?
+      return;
+    }
+    Table.put(p);
   }
 
   protected boolean setExtents(List<Map<String,Object>> dataRuns, long fsByteOffset, long fsBlockSize) {

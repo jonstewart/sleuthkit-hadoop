@@ -12,9 +12,8 @@ import org.apache.hadoop.fs.Path;
 class ExtentsProxy implements StreamProxy {
   public InputStream open(FileSystem fs, FSDataInputStream di, FsEntry entry)
                                                            throws IOException {
-    final Map<String,Object> attrs = (Map<String,Object>) entry.get("attrs");
     final List<Map<String,Object>> extents = 
-      (List<Map<String,Object>>) attrs.get("extents");
+      (List<Map<String,Object>>) entry.get("extents");
     return new ExtentsInputStream(di, extents);
   }
 }

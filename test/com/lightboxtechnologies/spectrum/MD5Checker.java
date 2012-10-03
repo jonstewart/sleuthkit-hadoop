@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
@@ -19,6 +20,8 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.lightboxtechnologies.io.IOUtils;
 
@@ -28,6 +31,9 @@ import org.sleuthkit.hadoop.core.SKMapper;
 public class MD5Checker extends Configured implements Tool {
   public static class Mapper
                   extends SKMapper<ImmutableHexWritable, FsEntry, Text, Text> {
+    private static final Log LOG =
+      LogFactory.getLog(MD5Checker.class.getName());
+
     private final Text outKey = new Text();
     private final Text outVal = new Text();
 
@@ -48,10 +54,20 @@ public class MD5Checker extends Configured implements Tool {
         new byte[1024 * 1024]
       );
 
+      final byte[] expected_md5 = hasher.digest();
+
+      if (!Arrays.equals(actual_md5, expected_md5)) {
+        LOG.error(
+          value.fullPath() + ": " +
+          Hex.encodeHexString(actual_md5) + " != " +
+          Hex.encodeHexString(expected_md5)
+        );
+      }
+
       outKey.set(value.fullPath());
       outVal.set(
         Hex.encodeHexString(actual_md5) + ' ' +
-        Hex.encodeHexString(hasher.digest())
+        Hex.encodeHexString(expected_md5)
       );
       context.write(outKey, outVal);
     }
